@@ -1,0 +1,10 @@
+
+<!-- list.html -->
+{% block content %}
+     {% for brand in brand_list %}
+          {{ brand.name }}
+          {% for car in brand.cars.all %}
+              {{car.name}}
+          {% endfor %}
+     {% endfor %}
+{% endblock %}
