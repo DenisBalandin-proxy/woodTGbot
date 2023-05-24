@@ -5,8 +5,9 @@ from django.conf import settings
 from telebot import types
 import telebot
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser
+from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department
 from datetime import datetime, time, date
+#from ...helper import MainBotMenu
 
 
 bot = telebot.TeleBot(settings.TOKEN)
@@ -64,6 +65,12 @@ class Command(BaseCommand):
         то-то ещё
         """
 
+        #TEST+++++TEST++++++TEST++++++
+        @bot.message_handler(commands=['fuck'])
+        def fuck(message):
+            from ...helper import MainMenuBot
+            MainMenuBot().mailing(message)
+
         # REGISTRATION_MENU+++++++++++++++++++++++++++++MBMBMBMBMBMBMBMBMBMBMBMBMBM
         @bot.message_handler(commands=['auth'])
         def auth_process(message):
@@ -107,7 +114,7 @@ class Command(BaseCommand):
 
 
         # REGISTRATION_MENU+++++++++++++++++++++++++++++
-        @bot.message_handler(commands=['start', 'registration'])
+        @bot.message_handler(commands=['star', 'registratio'])
         def registrationMenu(message):
 
             user = User.objects.filter(chat_id=message.from_user.id).first()
@@ -150,6 +157,8 @@ class Command(BaseCommand):
             keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
             key_no = types.InlineKeyboardButton(text='Мой баланс 💵', callback_data='balance')
             keyboard.add(key_no)
+            key_no = types.InlineKeyboardButton(text='Мои сотрудники 👥', callback_data='workers')
+            keyboard.add(key_no)
             question = 'Выберите дальнейшие действия'
             bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
 
@@ -182,6 +191,46 @@ class Command(BaseCommand):
             bot.register_next_step_handler(msg, on_selection)
 
 
+        #RECEIVE MY WORKERS GATE++++++++++++++++
+        def my_workers(message):
+
+            my_users = []
+            m_u = []
+            user = User.objects.filter(chat_id=message).first()
+            dep_head = Department.objects.filter(supervisor_dep=user.pk).first()
+
+            if not dep_head:
+                bot.send_message(message, 'У вас нет сотрудников')
+                return
+
+            users = User.objects.filter(department_user=dep_head.pk)
+
+            if users:
+                for user in users:
+                    my_users.append(user.user_fio)
+                    m_u.append(user)
+
+            keyboard = types.ReplyKeyboardMarkup(
+                row_width=2,
+                resize_keyboard=True,
+                one_time_keyboard=True
+            )
+            for user in my_users:
+                btn = types.KeyboardButton(user)
+                keyboard.add(btn)
+            # Отправляем клавиатуру
+            msg = bot.send_message(
+                message, 'Выберите пользователя',
+                reply_markup=keyboard
+            )
+            bot.register_next_step_handler(msg, get_my_workers_info, m_u)
+
+
+        def get_my_workers_info(message, my_users):
+            for user in my_users:
+                if user.user_fio == message.text:
+                    info = "Баланс: " + user.balance + "\nДата рождения: " + user.dateOfBirth
+                    bot.send_message(message, info)
 
 
         def select_benefit(message):
@@ -303,7 +352,7 @@ class Command(BaseCommand):
                 file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
                 downloaded_file = bot.download_file(file_info.file_path)
                 file = message.photo[1].file_id + ".jpg"
-                src = "C:/Users/Operator11/Desktop/PC WORK/Python/WoodExpotr_BOT_DJANGO/taskmanager/media/" + \
+                src = "C:/Users/Operator11/Desktop/PC WORK/Python/WoodExport_BOT_DJANGO/taskmanager/media/" + \
                     message.photo[1].file_id + ".jpg"
                 with open(src, 'wb') as new_file:
                     new_file.write(downloaded_file)
@@ -387,8 +436,6 @@ class Command(BaseCommand):
                 bot.send_message(call.message.chat.id, "Введите ФИО")
                 bot.register_next_step_handler(call.message, tempRegister)
             elif call.data == "no":
-                num = "89209430818"
-                CheckingAvailability.get_chat_id(num)
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             elif call.data == 'benefits':
                 #bot.delete_message(call.message.chat.id, call.message.message_id)
@@ -396,6 +443,9 @@ class Command(BaseCommand):
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             elif call.data == 'balance':
                 show_balance(call.message.chat.id)
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            elif call.data == 'workers':
+                my_workers(call.message.chat.id)
                 bot.delete_message(call.message.chat.id, call.message.message_id)
 
                 #bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)

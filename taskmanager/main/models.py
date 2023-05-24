@@ -4,6 +4,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
+from random import randint
 
 # Create your models here.
 #DEPARTMENT MODEL
@@ -22,10 +23,12 @@ class User(models.Model):
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
     user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
     phone = models.CharField(max_length=50, verbose_name='Телефон', null=True)
-    pin_code = models.CharField(max_length=30, verbose_name='Код доступа к боту', null=True)
+    pin_code = models.IntegerField(verbose_name='Код доступа к боту', null=True)
     sex = models.CharField(max_length=1, choices=SEXES, blank=True, verbose_name='Пол')
     dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')
-    department = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
+    department_user = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
+    is_supervisor = models.BooleanField(default=False, verbose_name='Руководитель')
+    supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.CASCADE)
     job = models.CharField(max_length=100, verbose_name='Должность', blank=True)
     dateOfHiring = models.DateField(null=True, editable=True, verbose_name='Дата приёма на работу')
     balance = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Баланс')
@@ -69,11 +72,11 @@ class BenefitImages(models.Model):
 
 class Supervisor(models.Model):
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
-    user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
-    department = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
+    sup_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
+    department_sup = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
 
     def __str__(self):
-        return self.user_fio
+        return self.sup_fio
 
     class Meta:
         verbose_name = 'Руководитель'
@@ -96,6 +99,7 @@ class TempUser(models.Model):
 
 class Department(MPTTModel):
     title = models.CharField(max_length=50, unique=True, verbose_name='Название')
+    #supervisor_dep = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='children',
                             db_index=True, verbose_name='Подотдел')
     slug = models.SlugField()
@@ -246,8 +250,27 @@ class PaidApplication(models.Model):
 #SIGNALS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #SIGNAL FOR USER APPROVING/REFUSING++++++++++++++++++++
-#@receiver(post_save, sender=User)
-#def save_user_signal(sender, instance, **kwargs):
+@receiver(post_save, sender=User)
+def save_user_signal(sender, instance, **kwargs):
+    if not instance.pin_code:
+        code = randint(1000, 9999)
+        instance.pin_code = code
+        instance.save()
+
+    supervisor = Supervisor.objects.filter(chat_id=instance.chat_id).first()
+
+    if instance.is_supervisor and supervisor:
+        return
+    elif instance.is_supervisor and not supervisor:
+        Supervisor.objects.create(
+            chat_id=instance.chat_id,
+            sup_fio=instance.user_fio,
+            department_sup=instance.department_user
+        )
+    elif not instance.is_supervisor and supervisor:
+        supervisor.delete()
+    elif not instance.is_supervisor and not supervisor:
+        return
     from .helper import user_saved_signal_approved, user_saved_signal_refused
     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
     #print("FFFFFFFFFFFF")

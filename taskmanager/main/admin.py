@@ -17,8 +17,8 @@ from django.utils.safestring import mark_safe
 
 class PostAdmin(admin.ModelAdmin):
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
-    list_display = ("user_fio", "department",)
-    readonly_fields = ('balance', 'wood_coins',)
+    list_display = ("user_fio", "department_user",)
+    readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
     list_filter = ["access"]
 
     def account_actions(self, obj):
@@ -28,7 +28,7 @@ admin.site.register(User, PostAdmin)
 
 
 class SupervisorAdmin(admin.ModelAdmin):
-    list_display = ("user_fio", "department")
+    list_display = ("sup_fio", "department_sup")
 
 admin.site.register(Supervisor, SupervisorAdmin)
 class CategoryAdmin(DjangoMpttAdmin):

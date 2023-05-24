@@ -6,6 +6,7 @@ from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from django.core.signals import request_finished
 from django.dispatch import receiver
 from .management.commands.bot import CheckingAvailability
+from .management.commands.bot import bot
 
 #+++++++++++++++++++++++++++++++++++++++++++++
 
@@ -23,3 +24,10 @@ def user_saved_signal_refused(chat_id):
 
 def calculate_work_experience(chat_id):
     CheckingAvailability.work_experience(chat_id)
+
+
+class MainMenuBot():
+
+    @staticmethod
+    def mailing(message):
+        bot.send_message(message.from_user.id, "Function success")
