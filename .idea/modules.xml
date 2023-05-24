@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/WoodExpotr_BOT_DJANGO.iml" filepath="$PROJECT_DIR$/.idea/WoodExpotr_BOT_DJANGO.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/WoodExport_BOT_DJANGO.iml" filepath="$PROJECT_DIR$/.idea/WoodExport_BOT_DJANGO.iml" />
     </modules>
   </component>
 </project>
