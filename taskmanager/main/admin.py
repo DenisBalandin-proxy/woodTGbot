@@ -28,7 +28,7 @@ admin.site.register(User, PostAdmin)
 
 
 class SupervisorAdmin(admin.ModelAdmin):
-    list_display = ("sup_fio", "department_sup")
+    list_display = ("sup_fio",)
 
 admin.site.register(Supervisor, SupervisorAdmin)
 class CategoryAdmin(DjangoMpttAdmin):

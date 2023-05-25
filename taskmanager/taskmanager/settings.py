@@ -80,8 +80,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'chat_bot',
-        'USER': 'vapor_username',
-        'PASSWORD': 'vapor_username',
+        'USER': 'postgres',
+        'PASSWORD': 'WoodAdmin',
         'HOST': 'localhost',
         'PORT': '',
     }
