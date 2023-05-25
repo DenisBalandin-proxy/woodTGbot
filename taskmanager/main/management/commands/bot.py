@@ -50,7 +50,7 @@ class CheckingAvailability():
         elif experience > 1825:
             user_data.balance = 50000
 
-        user_data.update()
+        user_data.save()
 
 
 class Command(BaseCommand):
