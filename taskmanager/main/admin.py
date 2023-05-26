@@ -33,7 +33,7 @@ class PostAdmin(admin.ModelAdmin):
                     "supervisors",
                     "balance",
                     "wood_coins",
-                    "pin_code"
+                    "pin_code",
                     "access",
                     "fired"
                 )
