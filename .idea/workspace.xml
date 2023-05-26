@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Bug Fixxxf" />
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Bug Fixxx" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" show_ignored="true">
+  <component name="ChangesViewManager">
     <option name="groupingKeys">
       <option value="directory" />
       <option value="repository" />
@@ -39,7 +39,7 @@
         <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/taskmanager" />
     <option name="RESET_MODE" value="MIXED" />
     <option name="ROOT_SYNC" value="SYNC" />
   </component>
@@ -306,7 +306,6 @@
     <MESSAGE value="Bug Fix (pin code and supervisor)" />
     <MESSAGE value="Bug Fix" />
     <MESSAGE value="Bug Fixxx" />
-    <MESSAGE value="Bug Fixxxf" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug Fixxxf" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug Fixxx" />
   </component>
 </project>
