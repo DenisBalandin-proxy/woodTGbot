@@ -19,7 +19,7 @@ class PostAdmin(admin.ModelAdmin):
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
     list_display = ("user_fio", "department_user",)
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
-    list_filter = ["access"]
+    list_filter = ["access", "department_user"]
     search_fields = ["user_fio", "access"]
     fields = (
                     "user_fio",

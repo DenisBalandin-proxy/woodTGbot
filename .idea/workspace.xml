@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Bug Fixxxf" />
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Bug Fixxxf">
+      <change beforePath="$PROJECT_DIR$/taskmanager/main/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/models.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -47,6 +49,7 @@
     <setting file="file://$PROJECT_DIR$/venv/Lib/site-packages/django/core/handlers/base.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="2QFeFdGrHpxxJdFYEyiS59UFjWU" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />

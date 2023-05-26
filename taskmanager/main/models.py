@@ -271,9 +271,9 @@ def save_user_signal(sender, instance, **kwargs):
         supervisor.delete()
     elif not instance.is_supervisor and not supervisor:
         return
-    instance.update()
+    instance.save()
 
-    from .helper import user_saved_signal_approved, user_saved_signal_refused
+    #from .helper import user_saved_signal_approved, user_saved_signal_refused
     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
     #print("FFFFFFFFFFFF")
     #instance.
