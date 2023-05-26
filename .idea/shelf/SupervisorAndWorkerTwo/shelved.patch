@@ -1,0 +1,295 @@
+Index: taskmanager/main/management/commands/bot.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import uuid\r\n\r\nfrom django.core.management.base import BaseCommand\r\nfrom django.conf import settings\r\nfrom telebot import types\r\nimport telebot\r\nfrom telegram_bot_calendar import DetailedTelegramCalendar, LSTEP\r\nfrom ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser\r\nfrom datetime import datetime, time, date\r\n\r\n\r\nbot = telebot.TeleBot(settings.TOKEN)\r\nclass CheckingAvailability():\r\n\r\n\r\n\r\n    def check_user(message):\r\n        #ДОБАВИТЬ FIRST() ЧТОБЫ СРАЗУ ФИЛЬТРОВАТЬ И БРАТЬ ПЕРВЫЙ ЭЛЕМЕНТ ИЗ БАЗЫ\r\n        user = User.objects.filter(chat_id=message.from_user.id).first()\r\n\r\n        if not user:\r\n            bot.send_message(message.from_user.id, \"Отказано в доступе\")\r\n            return False\r\n        else:\r\n            if user.access == \"A\" and not user.fired:\r\n                return True\r\n            else:\r\n                bot.send_message(message.from_user.id, \"Отказано в доступе\")\r\n                return False\r\n\r\n    def mailing(chat_id, text):\r\n        bot.send_message(chat_id, text)\r\n\r\n    def work_experience(chat_id):\r\n        user_data = User.objects.get(chat_id=chat_id)\r\n\r\n        date_of_hiring = user_data.dateOfHiring\r\n        date_today = datetime.today().date()\r\n\r\n        wort_experience_in_days = date_today - date_of_hiring\r\n        experience = wort_experience_in_days.days\r\n\r\n        if experience <= 365:\r\n            user_data.balance = 10000\r\n        elif experience > 365 and experience <= 1095:\r\n            user_data.balance = 20000\r\n        elif experience > 1095 and experience <= 1825:\r\n            user_data.balance = 30000\r\n        elif experience > 1825:\r\n            user_data.balance = 50000\r\n\r\n        user_data.save()\r\n\r\n\r\nclass Command(BaseCommand):\r\n  \t# Используется как описание команды обычно\r\n    help = 'Implemented to Django application telegram bot setup command'\r\n\r\n    def handle(self, *args, **options):\r\n        description = \"\"\"\r\n        Команды чат-бота.\r\n        Регистрация: /reg\r\n        Состояние:\r\n        то-то ещё\r\n        \"\"\"\r\n\r\n        # REGISTRATION_MENU+++++++++++++++++++++++++++++MBMBMBMBMBMBMBMBMBMBMBMBMBM\r\n        @bot.message_handler(commands=['auth'])\r\n        def auth_process(message):\r\n            user = User.objects.filter(chat_id=message.from_user.id).first()\r\n\r\n            if user:\r\n                bot.send_message(message.from_user.id, \"Вы уже регистрировались\")\r\n                return\r\n\r\n            bot.send_message(message.from_user.id, 'Авторизация в чате WoodExportBot. Введите ваш номер телефона в формате 89009009090')\r\n            bot.register_next_step_handler(message, auth_phone)\r\n\r\n        def auth_phone(message):\r\n            global phone\r\n            if message.content_type == 'text':\r\n                phone = message.text\r\n\r\n                user = User.objects.filter(phone=phone).first()\r\n\r\n                if user:\r\n                    bot.send_message(message.from_user.id, 'Введите pin-code, который вам предоставил отдел подбора персонала')\r\n                    bot.register_next_step_handler(message, auth_pin, user)\r\n                else:\r\n                    bot.send_message(message.from_user.id, 'Не удалось определить ваш номер телефона. Попробуйте повторно через меню авторизации.')\r\n\r\n        def auth_pin(message, user):\r\n            global pin\r\n            if message.content_type == 'text':\r\n                pin = message.text\r\n\r\n                if user.phone == phone and user.pin_code == pin:\r\n                    user.access = 'A'\r\n                    user.chat_id = message.from_user.id\r\n                    user.save()\r\n\r\n                    CheckingAvailability.work_experience(message.from_user.id)\r\n                    bot.send_message(message.from_user.id, 'Поздравляем! Вы успешно авторизовались в чате! Откройте меню чтобы ознакомиться с функционалом!')\r\n                else:\r\n                    bot.send_message(message.from_user.id,\r\n                                     'Не удалось подтвердить pin-code. Попробуйте повторно через меню авторизации.')\r\n\r\n\r\n        # REGISTRATION_MENU+++++++++++++++++++++++++++++\r\n        @bot.message_handler(commands=['start', 'registration'])\r\n        def registrationMenu(message):\r\n\r\n            user = User.objects.filter(chat_id=message.from_user.id).first()\r\n\r\n            if user:\r\n                bot.send_message(message.from_user.id, \"Вы уже регистрировались\")\r\n                return\r\n\r\n            keyboard = types.InlineKeyboardMarkup()  # наша клавиатура\r\n            key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')  # кнопка «Да»\r\n            keyboard.add(key_yes)  # добавляем кнопку в клавиатуру\r\n            key_no = types.InlineKeyboardButton(text='Нет', callback_data='no')\r\n            keyboard.add(key_no)\r\n            question = 'Зарегистрироваться сейчас?'\r\n            bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)\r\n\r\n\r\n        #SET USER'S FIO++++++++++++++++++++++++++\r\n        def set_fio(message):\r\n            bot.send_message(message.from_user.id, \"Введите ФИО\")\r\n            bot.register_next_step_handler(message, tempRegister)\r\n\r\n        #REGISTER NEW USER IN DATABASE+++++++++++++++++++++++++\r\n        def tempRegister(message):\r\n\r\n            TempUser.objects.create(chat_id=message.from_user.id, user_fio=message.text, access=\"R\")\r\n            User.objects.create(chat_id=message.from_user.id, user_fio=message.text)\r\n            bot.send_message(message.from_user.id, \"Ваша заявка на рассмотрении\")\r\n\r\n        #BENEFITS MENU+++++++++++++++++++++++++++++++++++++++++\r\n        @bot.message_handler(commands=['menu'])\r\n        def bot_menu_main_gate(message):\r\n            check_user = CheckingAvailability.check_user(message)\r\n\r\n            if check_user == False:\r\n                return\r\n\r\n            keyboard = types.InlineKeyboardMarkup()  # наша клавиатура\r\n            key_yes = types.InlineKeyboardButton(text='Гибкие льготы \uD83D\uDCDD', callback_data='benefits')  # кнопка «Да»\r\n            keyboard.add(key_yes)  # добавляем кнопку в клавиатуру\r\n            key_no = types.InlineKeyboardButton(text='Мой баланс \uD83D\uDCB5', callback_data='balance')\r\n            keyboard.add(key_no)\r\n            question = 'Выберите дальнейшие действия'\r\n            bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)\r\n\r\n\r\n\r\n\r\n        def select_test(message):\r\n            # Создаем клавиатуру\r\n\r\n            check_user = CheckingAvailability.check_user(message)\r\n\r\n            if check_user == False:\r\n                return\r\n\r\n            document = Document.objects.all()\r\n            buttons = document\r\n            keyboard = types.ReplyKeyboardMarkup(\r\n                row_width=2,\r\n                resize_keyboard=True,\r\n                one_time_keyboard=True\r\n            )\r\n            for but in buttons:\r\n                btn = types.KeyboardButton(but.document)\r\n                keyboard.add(btn)\r\n            # Отправляем клавиатуру\r\n            msg = bot.send_message(\r\n                message.from_user.id, 'Выберите услугу',\r\n                reply_markup=keyboard\r\n            )\r\n            bot.register_next_step_handler(msg, on_selection)\r\n\r\n\r\n\r\n\r\n        def select_benefit(message):\r\n            # Создаем клавиатуру\r\n\r\n            check_user = CheckingAvailability.check_user(message)\r\n\r\n            if check_user == False:\r\n                return\r\n\r\n            buttons = [\"Путешествия\", \"Здоровье\", \"Образование\", \"Выйти из меню\"]\r\n            keyboard = types.ReplyKeyboardMarkup(\r\n                row_width=2,\r\n                resize_keyboard=True,\r\n                one_time_keyboard=True\r\n            )\r\n            for but in buttons:\r\n                btn = types.KeyboardButton(but)\r\n                keyboard.add(btn)\r\n            # Отправляем клавиатуру\r\n            msg = bot.send_message(\r\n                message.from_user.id, 'Выберите услугу',\r\n                reply_markup=keyboard\r\n            )\r\n            bot.register_next_step_handler(msg, on_selection)\r\n\r\n        # Функция обработки выбора из клавиатуры из бенифитсов\r\n        def on_selection(message):\r\n            photos = []\r\n            if message.content_type == 'text':\r\n                selection = message.text\r\n                if selection == \"Путешествия\":\r\n                    bot.send_message(message.from_user.id,\r\n                                     'ВАЖНО! Отправляйте фото по одной штуке. Когда все фото будут отправлены, нажмите \"Завершить подачу документов\"')\r\n                    benefit_application_cycle(message, None, selection, photos)\r\n                elif selection == \"Здоровье\":\r\n                    bot.send_message(message.from_user.id,\r\n                                     'ВАЖНО! Отправляйте фото по одной штуке. Когда все фото будут отправлены, нажмите \"Завершить подачу документов\"')\r\n                    benefit_application_cycle(message, None, selection, photos)\r\n                elif selection == \"Образование\":\r\n                    bot.send_message(message.from_user.id,\r\n                                     'ВАЖНО! Отправляйте фото по одной штуке. Когда все фото будут отправлены, нажмите \"Завершить подачу документов\"')\r\n                    benefit_application_cycle(message, None, selection, photos)\r\n                elif selection == \"Выйти из меню\":\r\n                    return\r\n                else:\r\n                    select_benefit(message)\r\n                ### В selection теперь будет текст с кнопки, на которую нажал\r\n            else:\r\n                select_benefit(message)\r\n\r\n\r\n            #ЦЕПОЧТА ПРИКРЕПЛЕНИЯ ДОКУМЕНТОВ В БАЗУ\r\n        def benefit_application_cycle(message, app_id, benefit, photos):\r\n\r\n            buttons = [\"Завершить подачу документов\"]\r\n            keyboard = types.ReplyKeyboardMarkup(\r\n                row_width=2,\r\n                resize_keyboard=True,\r\n                one_time_keyboard=True\r\n            )\r\n            for but in buttons:\r\n                btn = types.KeyboardButton(but)\r\n                keyboard.add(btn)\r\n            # Отправляем клавиатуру\r\n            msg = bot.send_message(\r\n                message.from_user.id, 'Ожидаю действий',\r\n                reply_markup=keyboard\r\n            )\r\n            #bot.send_message(message.from_user.id, description)\r\n            bot.register_next_step_handler(message, save_photo_to_database, app_id, benefit, photos)\r\n\r\n#++++++++DELETE++++++++++\r\n        def on_selection_saving_photo_gate(message, app_id, benefit):\r\n            if message.content_type == 'photo':\r\n                save_photo_to_database(message, app_id, benefit)\r\n            elif message.text == \"Завершить подачу документов\" and not app_id:\r\n                bot.send_message(message.from_user.id, 'Заявка не сформирована, нет ни одного фото')\r\n                return\r\n            elif message.text == \"Завершить подачу документов\" and app_id:\r\n                user = User.objects.get(chat_id=message.from_user.id)\r\n                bot.send_message(message.from_user.id, 'Ваш баланс:' + str(user.balance) + 'Введите сумму выплат')\r\n                bot.register_next_step_handler(message, set_benefits_sum, app_id, user.balance)\r\n            elif message.content_type == 'text' and message.text != 'Завершить подачу документов':\r\n                bot.send_message(message.from_user.id, \"Файл должен быть фотографией\")\r\n                benefit_application_cycle(message, app_id, benefit)\r\n            ### В selection теперь будет текст с кнопки, на которую нажал\r\n\r\n        def set_benefits_sum(message, app_id, balance, photos, benefit):\r\n            if message.content_type != 'text':\r\n                bot.send_message(message.from_user.id, \"Введите сумму выплаты\")\r\n                bot.register_next_step_handler(message, set_benefits_sum, app_id, balance, photos, benefit)\r\n            else:\r\n                if message.text.isdigit():\r\n                    integer_sum = int(message.text)\r\n                    if balance >= integer_sum and integer_sum > 0:\r\n                        count = balance - integer_sum\r\n                        user = User.objects.get(chat_id=message.from_user.id)\r\n                        user.balance = count\r\n                        user.save()\r\n\r\n                        save_application_processing(message, None, photos, benefit, integer_sum)\r\n                        #app = ActiveApplication.objects.get(pk=app_id)\r\n                        #app.sum = integer_sum\r\n                        #app.save()\r\n                    else:\r\n                        bot.send_message(message.from_user.id, \"Введённая сумма больше баланса. Введите снова\")\r\n                        bot.register_next_step_handler(message, set_benefits_sum, app_id, balance, photos, benefit)\r\n                else:\r\n                    bot.send_message(message.from_user.id, \"Введите сумму цифрами\")\r\n                    bot.register_next_step_handler(message, set_benefits_sum, app_id, balance, photos, benefit)\r\n\r\n\r\n        def save_photo_to_database(message, app_id, benefit, arrPhotos):\r\n            if message.content_type == 'photo':\r\n                application_id = app_id\r\n                photos = arrPhotos\r\n\r\n                file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)\r\n                downloaded_file = bot.download_file(file_info.file_path)\r\n                file = message.photo[1].file_id + \".jpg\"\r\n                src = \"C:/Users/Operator11/Desktop/PC WORK/Python/WoodExpotr_BOT_DJANGO/taskmanager/media/\" + \\\r\n                    message.photo[1].file_id + \".jpg\"\r\n                with open(src, 'wb') as new_file:\r\n                    new_file.write(downloaded_file)\r\n\r\n                    arrPhotos.append(file)\r\n\r\n                bot.send_message(message.from_user.id, \"Сохранил фото\")\r\n                benefit_application_cycle(message, app_id, benefit, arrPhotos)\r\n\r\n            elif message.text == \"Завершить подачу документов\" and not arrPhotos:\r\n                bot.send_message(message.from_user.id, 'Заявка не сформирована, нет ни одного фото')\r\n                return\r\n            elif message.text == \"Завершить подачу документов\" and arrPhotos:\r\n                user = User.objects.get(chat_id=message.from_user.id)\r\n                bot.send_message(message.from_user.id, 'Ваш баланс:' + ' ' + str(user.balance) + '. ' + 'Введите сумму выплат')\r\n                bot.register_next_step_handler(message, set_benefits_sum, app_id, user.balance, arrPhotos, benefit)\r\n            elif message.content_type == 'text' and message.text != 'Завершить подачу документов':\r\n                bot.send_message(message.from_user.id, \"Файл должен быть фотографией\")\r\n                benefit_application_cycle(message, app_id, benefit, arrPhotos)\r\n            ### В selection теперь будет текст с кнопки, на которую нажал\r\n\r\n\r\n                # item = Item.objects.get()\r\n                # cart = Cart.object.get(fio=user.user_fio, benefit=\"Путешествие\")\r\n\r\n                #bot.register_next_step_handler(message, traveling_check, application_id)\r\n            #else:\r\n            #    bot.send_message(message.from_user.id, \"Файл не является фотографией!!!\")\r\n            #    bot.register_next_step_handler(message, save_photo_to_database, None)\r\n\r\n        def traveling_final(message):\r\n            bot.send_message(message.from_user.id, \"Ваша заявка на рассмотрении.\")\r\n\r\n\r\n\r\n        def save_application_processing(message, app_id, photos, benefit, balance):\r\n            user = User.objects.get(chat_id=message.from_user.id)\r\n\r\n            application = ActiveApplication.objects.create(chat_id=user.chat_id, fio=user.user_fio, benefit=benefit, sum=balance)\r\n\r\n            for photo in photos:\r\n                document = Document.objects.create(document=\"Документ\", image=photo)\r\n                DocumentsInApplication.objects.create(application_id=application.pk, document_id=document.pk)\r\n\r\n            bot.send_message(message.from_user.id, 'Ваша заявка на рассмотрении')\r\n\r\n\r\n        #В ОТДЕЛЬНЫЙ ФАЙЛ\r\n        def show_balance(message):\r\n            user = User.objects.filter(chat_id=message).first()\r\n            balance = user.balance\r\n            bot.send_message(message, f\"Ваш баланс: {balance}\")\r\n\r\n\r\n\r\n        # CELENDAR_KEYBOARD+++++++++++++++++++++++++++++++++++\r\n        def create_celendar(message):\r\n            calendar, step = DetailedTelegramCalendar().build()\r\n            bot.send_message(message.chat.id,\r\n                             f\"Select {LSTEP[step]}\",\r\n                             reply_markup=calendar)\r\n\r\n        @bot.callback_query_handler(func=DetailedTelegramCalendar.func())\r\n        def cal(c):\r\n            result, key, step = DetailedTelegramCalendar().process(c.data)\r\n            if not result and key:\r\n                bot.edit_message_text(f\"Select {LSTEP[step]}\",\r\n                                      c.message.chat.id,\r\n                                      c.message.message_id,\r\n                                      reply_markup=key)\r\n            elif result:\r\n                bot.edit_message_text(f\"You selected {result}\",\r\n                                      c.message.chat.id,\r\n                                      c.message.message_id)\r\n\r\n        # REGISTRATION_CALLBACK++++++++++++++++++++++++++++++++++++\r\n        @bot.callback_query_handler(func=lambda call: True)\r\n        def callback_registration_menu(call):\r\n            if call.data == \"yes\":  # call.data это callback_data, которую мы указали при объявлении кнопки\r\n                bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)\r\n                bot.send_message(call.message.chat.id, \"Введите ФИО\")\r\n                bot.register_next_step_handler(call.message, tempRegister)\r\n            elif call.data == \"no\":\r\n                num = \"89209430818\"\r\n                CheckingAvailability.get_chat_id(num)\r\n                bot.delete_message(call.message.chat.id, call.message.message_id)\r\n            elif call.data == 'benefits':\r\n                #bot.delete_message(call.message.chat.id, call.message.message_id)\r\n                select_benefit(call)\r\n                bot.delete_message(call.message.chat.id, call.message.message_id)\r\n            elif call.data == 'balance':\r\n                show_balance(call.message.chat.id)\r\n                bot.delete_message(call.message.chat.id, call.message.message_id)\r\n\r\n                #bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)\r\n            # bot.register_next_step_handler(call.message.chat, set_fio);\r\n\r\n        #LONGPOOLING - поменять на WEBHOOK\r\n        bot.polling(none_stop=True, interval=0)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskmanager/main/management/commands/bot.py b/taskmanager/main/management/commands/bot.py
+--- a/taskmanager/main/management/commands/bot.py	(revision 873e3f0b4ccca9970d52c9172a2837476b6e9d61)
++++ b/taskmanager/main/management/commands/bot.py	(date 1684952961711)
+@@ -5,8 +5,9 @@
+ from telebot import types
+ import telebot
+ from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
+-from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser
++from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department
+ from datetime import datetime, time, date
++#from ...helper import MainBotMenu
+ 
+ 
+ bot = telebot.TeleBot(settings.TOKEN)
+@@ -64,6 +65,12 @@
+         то-то ещё
+         """
+ 
++        #TEST+++++TEST++++++TEST++++++
++        @bot.message_handler(commands=['fuck'])
++        def fuck(message):
++            from ...helper import MainMenuBot
++            MainMenuBot().mailing(message)
++
+         # REGISTRATION_MENU+++++++++++++++++++++++++++++MBMBMBMBMBMBMBMBMBMBMBMBMBM
+         @bot.message_handler(commands=['auth'])
+         def auth_process(message):
+@@ -107,7 +114,7 @@
+ 
+ 
+         # REGISTRATION_MENU+++++++++++++++++++++++++++++
+-        @bot.message_handler(commands=['start', 'registration'])
++        @bot.message_handler(commands=['star', 'registratio'])
+         def registrationMenu(message):
+ 
+             user = User.objects.filter(chat_id=message.from_user.id).first()
+@@ -149,6 +156,8 @@
+             key_yes = types.InlineKeyboardButton(text='Гибкие льготы 📝', callback_data='benefits')  # кнопка «Да»
+             keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
+             key_no = types.InlineKeyboardButton(text='Мой баланс 💵', callback_data='balance')
++            keyboard.add(key_no)
++            key_no = types.InlineKeyboardButton(text='Мои сотрудники 👥', callback_data='workers')
+             keyboard.add(key_no)
+             question = 'Выберите дальнейшие действия'
+             bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
+@@ -182,6 +191,46 @@
+             bot.register_next_step_handler(msg, on_selection)
+ 
+ 
++        #RECEIVE MY WORKERS GATE++++++++++++++++
++        def my_workers(message):
++
++            my_users = []
++            m_u = []
++            user = User.objects.filter(chat_id=message).first()
++            dep_head = Department.objects.filter(supervisor_dep=user.pk).first()
++
++            if not dep_head:
++                bot.send_message(message, 'У вас нет сотрудников')
++                return
++
++            users = User.objects.filter(department_user=dep_head.pk)
++
++            if users:
++                for user in users:
++                    my_users.append(user.user_fio)
++                    m_u.append(user)
++
++            keyboard = types.ReplyKeyboardMarkup(
++                row_width=2,
++                resize_keyboard=True,
++                one_time_keyboard=True
++            )
++            for user in my_users:
++                btn = types.KeyboardButton(user)
++                keyboard.add(btn)
++            # Отправляем клавиатуру
++            msg = bot.send_message(
++                message, 'Выберите пользователя',
++                reply_markup=keyboard
++            )
++            bot.register_next_step_handler(msg, get_my_workers_info, m_u)
++
++
++        def get_my_workers_info(message, my_users):
++            for user in my_users:
++                if user.user_fio == message.text:
++                    info = "Баланс: " + user.balance + "\nДата рождения: " + user.dateOfBirth
++                    bot.send_message(message, info)
+ 
+ 
+         def select_benefit(message):
+@@ -303,7 +352,7 @@
+                 file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
+                 downloaded_file = bot.download_file(file_info.file_path)
+                 file = message.photo[1].file_id + ".jpg"
+-                src = "C:/Users/Operator11/Desktop/PC WORK/Python/WoodExpotr_BOT_DJANGO/taskmanager/media/" + \
++                src = "C:/Users/Operator11/Desktop/PC WORK/Python/WoodExport_BOT_DJANGO/taskmanager/media/" + \
+                     message.photo[1].file_id + ".jpg"
+                 with open(src, 'wb') as new_file:
+                     new_file.write(downloaded_file)
+@@ -387,8 +436,6 @@
+                 bot.send_message(call.message.chat.id, "Введите ФИО")
+                 bot.register_next_step_handler(call.message, tempRegister)
+             elif call.data == "no":
+-                num = "89209430818"
+-                CheckingAvailability.get_chat_id(num)
+                 bot.delete_message(call.message.chat.id, call.message.message_id)
+             elif call.data == 'benefits':
+                 #bot.delete_message(call.message.chat.id, call.message.message_id)
+@@ -397,6 +444,9 @@
+             elif call.data == 'balance':
+                 show_balance(call.message.chat.id)
+                 bot.delete_message(call.message.chat.id, call.message.message_id)
++            elif call.data == 'workers':
++                my_workers(call.message.chat.id)
++                bot.delete_message(call.message.chat.id, call.message.message_id)
+ 
+                 #bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)
+             # bot.register_next_step_handler(call.message.chat, set_fio);
+Index: taskmanager/main/admin.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from django.contrib import admin\r\nfrom django_mptt_admin.admin import DjangoMpttAdmin\r\nfrom .models import (\r\n    User,\r\n    Department,\r\n    Supervisor,\r\n    ApplicationForPayment,\r\n    Document,\r\n    ActiveApplication,\r\n    DocumentsInApplication,\r\n    ApplicationArchive,\r\n    DocumentsInApplicationArchive,\r\n    PaidApplication)\r\nfrom django.template.loader import get_template\r\nfrom django.utils.safestring import mark_safe\r\n\r\n\r\nclass PostAdmin(admin.ModelAdmin):\r\n    #prepopulated_fields = {\"slug\": (\"user_fio\", \"department\",)}\r\n    list_display = (\"user_fio\", \"department\",)\r\n    readonly_fields = ('balance', 'wood_coins',)\r\n    list_filter = [\"access\"]\r\n\r\n    def account_actions(self, obj):\r\n        print(\"WE SAVED USER\")\r\n\r\nadmin.site.register(User, PostAdmin)\r\n\r\n\r\nclass SupervisorAdmin(admin.ModelAdmin):\r\n    list_display = (\"user_fio\", \"department\")\r\n\r\nadmin.site.register(Supervisor, SupervisorAdmin)\r\nclass CategoryAdmin(DjangoMpttAdmin):\r\n    prepopulated_fields = {\"slug\": (\"title\",)}\r\n\r\nadmin.site.register(Department, CategoryAdmin)\r\n\r\n\r\n#TEST++++++++++++++++++++++++++++++++++++++++\r\n\r\nclass AppForPaymentAdmin(admin.ModelAdmin):\r\n    list_display = (\"fio\", \"benefit\", \"sum\", \"state\", \"status\")\r\n    readonly_fields = (\"fio\", \"benefit\", \"sum\", \"state\")\r\n\r\nadmin.site.register(ApplicationForPayment, AppForPaymentAdmin)\r\n\r\nclass PaidApplicationAdmin(admin.ModelAdmin):\r\n    list_display = (\"fio\", \"benefit\", \"sum\", \"created\")\r\n    readonly_fields = (\"fio\", \"benefit\", \"sum\", \"created\")\r\n\r\nadmin.site.register(PaidApplication, PaidApplicationAdmin)\r\n\r\nclass DocumentsInArchiveInLine(admin.StackedInline):\r\n    model = DocumentsInApplicationArchive\r\n    readonly_fields = [\"preview\"]\r\n    extra = 0\r\n\r\n    def preview(self, obj):\r\n        return mark_safe(f'<img src=\"{obj.document.image.url}\">')\r\n\r\n\r\nclass ApplicationArchiveAdmin(admin.ModelAdmin):\r\n    inlines = [DocumentsInArchiveInLine]\r\n    readonly_fields = [\"fio\", \"benefit\"]\r\n    list_display = [\"fio\", \"benefit\", \"created\"]\r\n\r\nadmin.site.register(ApplicationArchive, ApplicationArchiveAdmin)\r\n\r\nclass DocumentInline(admin.StackedInline):\r\n    model = DocumentsInApplication\r\n    readonly_fields = [\"preview\"]\r\n    extra = 0\r\n\r\n    def preview(self, obj):\r\n        return mark_safe(f'<img src=\"{obj.document.image.url}\">')\r\n\r\nclass ApplicationAdmin(admin.ModelAdmin):\r\n    inlines = [DocumentInline]\r\n    readonly_fields = [\"fio\", \"benefit\"]\r\n    list_display = [\"fio\", \"benefit\", \"created\", \"status\"]\r\n\r\nadmin.site.register(ActiveApplication, ApplicationAdmin)\r\nadmin.site.register(Document)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskmanager/main/admin.py b/taskmanager/main/admin.py
+--- a/taskmanager/main/admin.py	(revision 873e3f0b4ccca9970d52c9172a2837476b6e9d61)
++++ b/taskmanager/main/admin.py	(date 1684952938370)
+@@ -17,8 +17,8 @@
+ 
+ class PostAdmin(admin.ModelAdmin):
+     #prepopulated_fields = {"slug": ("user_fio", "department",)}
+-    list_display = ("user_fio", "department",)
+-    readonly_fields = ('balance', 'wood_coins',)
++    list_display = ("user_fio", "department_user",)
++    readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
+     list_filter = ["access"]
+ 
+     def account_actions(self, obj):
+@@ -28,7 +28,7 @@
+ 
+ 
+ class SupervisorAdmin(admin.ModelAdmin):
+-    list_display = ("user_fio", "department")
++    list_display = ("sup_fio", "department_sup")
+ 
+ admin.site.register(Supervisor, SupervisorAdmin)
+ class CategoryAdmin(DjangoMpttAdmin):
+Index: taskmanager/taskmanager/settings.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"\r\nDjango settings for taskmanager project.\r\n\r\nGenerated by 'django-admin startproject' using Django 4.2.\r\n\r\nFor more information on this file, see\r\nhttps://docs.djangoproject.com/en/4.2/topics/settings/\r\n\r\nFor the full list of settings and their values, see\r\nhttps://docs.djangoproject.com/en/4.2/ref/settings/\r\n\"\"\"\r\n\r\nfrom pathlib import Path\r\nimport os\r\n\r\n# Build paths inside the project like this: BASE_DIR / 'subdir'.\r\nBASE_DIR = Path(__file__).resolve().parent.parent\r\n\r\n\r\n# Quick-start development settings - unsuitable for production\r\n# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/\r\n\r\n# SECURITY WARNING: keep the secret key used in production secret!\r\nSECRET_KEY = 'django-insecure-y1(spmq9f1og()+8omvn78%8dm7+5^)ytl8t&6d8i-=c-uxz#9'\r\n\r\n# SECURITY WARNING: don't run with debug turned on in production!\r\nDEBUG = True\r\n\r\nALLOWED_HOSTS = []\r\n\r\n\r\n# Application definition\r\n\r\nINSTALLED_APPS = [\r\n    'django.contrib.admin',\r\n    'django.contrib.auth',\r\n    'django.contrib.contenttypes',\r\n    'django.contrib.sessions',\r\n    'django.contrib.messages',\r\n    'django.contrib.staticfiles',\r\n    'main',\r\n    'django_mptt_admin'\r\n]\r\n\r\nMIDDLEWARE = [\r\n    'django.middleware.security.SecurityMiddleware',\r\n    'django.contrib.sessions.middleware.SessionMiddleware',\r\n    'django.middleware.common.CommonMiddleware',\r\n    'django.middleware.csrf.CsrfViewMiddleware',\r\n    'django.contrib.auth.middleware.AuthenticationMiddleware',\r\n    'django.contrib.messages.middleware.MessageMiddleware',\r\n    'django.middleware.clickjacking.XFrameOptionsMiddleware',\r\n]\r\n\r\nROOT_URLCONF = 'taskmanager.urls'\r\n\r\nTEMPLATES = [\r\n    {\r\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\r\n        'DIRS': [],\r\n        'APP_DIRS': True,\r\n        'OPTIONS': {\r\n            'context_processors': [\r\n                'django.template.context_processors.debug',\r\n                'django.template.context_processors.request',\r\n                'django.contrib.auth.context_processors.auth',\r\n                'django.contrib.messages.context_processors.messages',\r\n            ],\r\n        },\r\n    },\r\n]\r\n\r\nWSGI_APPLICATION = 'taskmanager.wsgi.application'\r\n\r\n\r\n# Database\r\n# https://docs.djangoproject.com/en/4.2/ref/settings/#databases\r\n\r\nDATABASES = {\r\n    'default': {\r\n        'ENGINE': 'django.db.backends.postgresql',\r\n        'NAME': 'chat_bot',\r\n        'USER': 'postgres',\r\n        'PASSWORD': 'WoodAdmin',\r\n        'HOST': 'localhost',\r\n        'PORT': '',\r\n    }\r\n}\r\n\r\n\r\n# Password validation\r\n# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators\r\n\r\nAUTH_PASSWORD_VALIDATORS = [\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',\r\n    },\r\n    {\r\n        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',\r\n    },\r\n]\r\n\r\n\r\n# Internationalization\r\n# https://docs.djangoproject.com/en/4.2/topics/i18n/\r\n\r\nLANGUAGE_CODE = 'ru'\r\n\r\nTIME_ZONE = 'Europe/Moscow'\r\n\r\nUSE_I18N = True\r\n\r\nUSE_TZ = True\r\n\r\n\r\n# Static files (CSS, JavaScript, Images)\r\n# https://docs.djangoproject.com/en/4.2/howto/static-files/\r\n\r\nSTATIC_URL = 'static/'\r\n\r\nTOKEN = '6135785600:AAF7A8YU72QWVYE_CmIGRjvTvFs5pr4sI48'\r\n\r\n# Default primary key field type\r\n# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field\r\n\r\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'\r\n\r\nMEDIA_URL = \"/media/\"\r\nMEDIA_ROOT = os.path.join(BASE_DIR, 'media')\r\n\r\nSTATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskmanager/taskmanager/settings.py b/taskmanager/taskmanager/settings.py
+--- a/taskmanager/taskmanager/settings.py	(revision 873e3f0b4ccca9970d52c9172a2837476b6e9d61)
++++ b/taskmanager/taskmanager/settings.py	(date 1684952938376)
+@@ -26,7 +26,7 @@
+ # SECURITY WARNING: don't run with debug turned on in production!
+ DEBUG = True
+ 
+-ALLOWED_HOSTS = []
++ALLOWED_HOSTS = ['172.16.4.144', '127.0.0.1']
+ 
+ 
+ # Application definition
+Index: taskmanager/main/models.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from django.db import models\r\nfrom django.urls import reverse\r\nfrom mptt.models import MPTTModel, TreeForeignKey\r\nfrom django.db.models.signals import post_save\r\nfrom django.dispatch import receiver\r\nfrom datetime import datetime\r\n\r\n# Create your models here.\r\n#DEPARTMENT MODEL\r\n\r\nclass User(models.Model):\r\n    SEXES = (\r\n        ('M', 'М'),\r\n        ('F', 'Ж'),\r\n    )\r\n\r\n    ACCESS = (\r\n        ('A', 'Подтверждено'),\r\n        ('P', 'На рассмотрении')\r\n    )\r\n\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)\r\n    phone = models.CharField(max_length=50, verbose_name='Телефон', null=True)\r\n    pin_code = models.CharField(max_length=30, verbose_name='Код доступа к боту', null=True)\r\n    sex = models.CharField(max_length=1, choices=SEXES, blank=True, verbose_name='Пол')\r\n    dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')\r\n    department = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')\r\n    job = models.CharField(max_length=100, verbose_name='Должность', blank=True)\r\n    dateOfHiring = models.DateField(null=True, editable=True, verbose_name='Дата приёма на работу')\r\n    balance = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Баланс')\r\n    wood_coins = models.IntegerField(blank=True, null=True, editable=False, verbose_name='WoodCoins')\r\n    #benefits = models.BooleanField(default=False, verbose_name='Гибкие льготы')\r\n    staff_type = models.CharField(max_length=5, blank=True, null=True, editable=False)\r\n    access = models.CharField(max_length=1, choices=ACCESS, default='P', null=True, verbose_name='Доступ')\r\n    fired = models.BooleanField(default=False, verbose_name='Уволен')\r\n\r\n\r\n    def __str__(self):\r\n        return self.user_fio\r\n\r\n    class Meta:\r\n        verbose_name = 'Сотрудник'\r\n        verbose_name_plural = 'Сотрудники'\r\n\r\n    @classmethod\r\n    def get(cls, param):\r\n        pass\r\n\r\n\r\n#class DayOff(models.Model):\r\n#    day = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)\r\n#    name = models.CharField(max_length=30)\r\n#    price = models.IntegerField()\r\n\r\n\r\n#    def __str__(self):\r\n#        return self.name\r\n\r\nclass BenefitImages(models.Model):\r\n    fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)\r\n    benefit = models.CharField(max_length=100)\r\n    image = models.ImageField(blank=False, null=False, upload_to=None)\r\n    #user = models.ForeignKey(User, related_name='ben_img', on_delete=models.CASCADE)\r\n\r\n    def __str__(self):\r\n        return self.benefit\r\n\r\n\r\nclass Supervisor(models.Model):\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)\r\n    department = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)\r\n\r\n    def __str__(self):\r\n        return self.user_fio\r\n\r\n    class Meta:\r\n        verbose_name = 'Руководитель'\r\n        verbose_name_plural = 'Руководители'\r\n\r\n\r\nclass TempUser(models.Model):\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)\r\n    access = models.CharField(max_length=1, null=True, verbose_name='Доступ')\r\n\r\n    def __str__(self):\r\n        return self.user_fio\r\n\r\n    class Meta:\r\n        verbose_name = 'Неподтверждённые пользователи'\r\n        verbose_name_plural = 'Неподтверждённые пользователи'\r\n\r\n\r\n\r\nclass Department(MPTTModel):\r\n    title = models.CharField(max_length=50, unique=True, verbose_name='Название')\r\n    parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='children',\r\n                            db_index=True, verbose_name='Подотдел')\r\n    slug = models.SlugField()\r\n\r\n    class MPTTMeta:\r\n        order_insertion_by = ['title']\r\n\r\n    class Meta:\r\n        unique_together = [['parent', 'slug']]\r\n        verbose_name = 'Отдел'\r\n        verbose_name_plural = 'Отдел'\r\n\r\n    def get_absolute_url(self):\r\n        return reverse('user-by-department', args=[str(self.slug)])\r\n\r\n    def __str__(self):\r\n        return self.title\r\n\r\n\r\n\r\n\r\n#TEST+++++++++++++++++++++++++++++\r\n\r\n#DOCUMENT - ITEM\r\nclass Document(models.Model):\r\n    document = models.CharField(max_length=100, blank=True, null=True, editable=False)\r\n    image = models.ImageField(blank=False, null=False)\r\n\r\n    class Meta:\r\n        verbose_name = 'Документы'\r\n        verbose_name_plural = 'Документы'\r\n\r\n    def __str__(self):\r\n        return self.document\r\n\r\n#APPLICATION - CART\r\n\r\nclass ApplicationForPayment(models.Model):\r\n\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    fio = models.CharField(max_length=100, blank=True, null=True)\r\n    benefit = models.CharField(max_length=100, blank=True, null=True)\r\n    created = models.DateTimeField(auto_now_add=True, null=True)\r\n    sum = models.IntegerField(null=True)\r\n    state = models.CharField(max_length=100, blank=True, null=True, default='Ожидает выплаты')\r\n    status = models.BooleanField(default=False)\r\n\r\n    class Meta:\r\n        verbose_name = 'Заявления к выплате'\r\n        verbose_name_plural = 'Заявления к выплате'\r\n\r\n    def __str__(self):\r\n        return f\"{self.fio}\"\r\n\r\n\r\n\r\nclass ApplicationArchive(models.Model):\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    created = models.DateTimeField(auto_now_add=True)\r\n    fio = models.CharField(max_length=100, blank=True, null=True)\r\n    benefit = models.CharField(max_length=100, blank=True, null=True)\r\n    sum = models.IntegerField(null=True)\r\n\r\n    class Meta:\r\n        verbose_name = 'Архив заявлений'\r\n        verbose_name_plural = 'Архив заявлений'\r\n\r\n    def __str__(self):\r\n        return f\"{self.fio}\"\r\n\r\nclass ActiveApplication(models.Model):\r\n    STATE = (\r\n        ('AP', 'Одобрить'),\r\n        ('RJ', 'Отклонить'),\r\n        ('PR', 'На рассмотрении')\r\n    )\r\n\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    created = models.DateTimeField(auto_now_add=True)\r\n    fio = models.CharField(max_length=100, blank=True, null=True)\r\n    benefit = models.CharField(max_length=100, blank=True, null=True)\r\n    sum = models.IntegerField(null=True)\r\n    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE, default=\"PR\")\r\n    status = models.BooleanField(default=False)\r\n\r\n    class Meta:\r\n        verbose_name = 'Активные заявления'\r\n        verbose_name_plural = 'Активные заявления'\r\n\r\n    def total_price(self):\r\n        return sum([\r\n            cart_item.total()\r\n            for cart_item in DocumentsInApplication.objects.filter(cart=self)\r\n        ])\r\n\r\n    def __str__(self):\r\n        return f\"{self.fio}\"\r\n\r\n\r\n#CONNECT APPLICATION AND DOCUMENT\r\nclass DocumentsInApplication(models.Model):\r\n    application = models.ForeignKey(ActiveApplication, on_delete=models.CASCADE)\r\n    document = models.ForeignKey(Document, on_delete=models.CASCADE, editable=False)\r\n    #count = models.IntegerField(default=1)\r\n\r\n    class Meta:\r\n        verbose_name = 'Пакет документов'\r\n\r\n    def total(self):\r\n        #return self.item.document\r\n        return self.document.image\r\n\r\n    def __str__(self):\r\n        return self.document.document\r\n\r\n\r\nclass DocumentsInApplicationArchive(models.Model):\r\n    application_archive = models.ForeignKey(ApplicationArchive, on_delete=models.CASCADE, null=True)\r\n    document = models.ForeignKey(Document, on_delete=models.CASCADE, editable=False)\r\n    #count = models.IntegerField(default=1)\r\n\r\n    class Meta:\r\n        verbose_name = 'Пакет документов'\r\n\r\n    def total(self):\r\n        #return self.item.document\r\n        return self.document.image\r\n\r\n    def __str__(self):\r\n        return self.document.document\r\n\r\n\r\nclass PaidApplication(models.Model):\r\n    chat_id = models.IntegerField(blank=True, null=True, editable=False)\r\n    fio = models.CharField(max_length=100, blank=True, null=True)\r\n    created = models.DateTimeField(auto_now_add=True)\r\n    benefit = models.CharField(max_length=100, blank=True, null=True)\r\n    sum = models.IntegerField(null=True)\r\n\r\n    class Meta:\r\n        verbose_name = 'Выплаченные заявления'\r\n        verbose_name_plural = 'Выплаченные заявления'\r\n\r\n\r\n    def __str__(self):\r\n        return f\"{self.fio}\"\r\n\r\n#SIGNALS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n\r\n#SIGNAL FOR USER APPROVING/REFUSING++++++++++++++++++++\r\n#@receiver(post_save, sender=User)\r\n#def save_user_signal(sender, instance, **kwargs):\r\n    from .helper import user_saved_signal_approved, user_saved_signal_refused\r\n    #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)\r\n    #print(\"FFFFFFFFFFFF\")\r\n    #instance.\r\n    #if instance.access and instance.access == \"A\" and not instance.balance:\r\n    #    user_saved_signal_approved(instance.chat_id)\r\n        #calculate_work_experience(instance.chat_id)\r\n\r\n\r\n@receiver(post_save, sender=ActiveApplication)\r\ndef save_active_application_signal(sender, instance, **kwargs):\r\n    if not instance.sum:\r\n        return\r\n\r\n    if instance.state == \"PR\":\r\n        return\r\n\r\n    if instance.state == \"AP\":\r\n        app = ApplicationForPayment.objects.create(\r\n            chat_id=instance.chat_id,\r\n            fio=instance.fio,\r\n            benefit=instance.benefit,\r\n            sum=instance.sum\r\n        )\r\n\r\n        app_arch = ApplicationArchive.objects.create(\r\n            chat_id=instance.chat_id,\r\n            created=datetime.today(),\r\n            fio=instance.fio,\r\n            benefit=instance.benefit,\r\n            sum=instance.sum\r\n        )\r\n\r\n        documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()\r\n\r\n        for document in documents:\r\n            DocumentsInApplicationArchive.objects.create(application_archive_id=app_arch.pk, document_id=document.document_id)\r\n\r\n        instance.delete()\r\n\r\n    elif instance.state == \"RJ\":\r\n        ApplicationArchive.objects.create(\r\n            chat_id=instance.chat_id,\r\n            created=instance.created,\r\n            fio=instance.fio,\r\n            benefit=instance.benefit,\r\n            sum=instance.sum\r\n        )\r\n\r\n        user = User.objects.filter(chat_id=instance.chat_id).first()\r\n\r\n        current_balance = user.balance\r\n        user.balance = current_balance + instance.sum\r\n        user.save()\r\n\r\n        instance.delete()\r\n\r\n    elif instance.state == \"PR\":\r\n        return\r\n    elif instance.sum:\r\n        return\r\n\r\n@receiver(post_save, sender=ApplicationForPayment)\r\ndef save_app_for_payment_in_archive(sender, instance, **kwargs):\r\n    if instance.status:\r\n        PaidApplication.objects.create(\r\n            chat_id=instance.chat_id,\r\n            created=datetime.today(),\r\n            fio=instance.fio,\r\n            benefit=instance.benefit,\r\n            sum=instance.sum\r\n        )\r\n        instance.delete()\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskmanager/main/models.py b/taskmanager/main/models.py
+--- a/taskmanager/main/models.py	(revision 873e3f0b4ccca9970d52c9172a2837476b6e9d61)
++++ b/taskmanager/main/models.py	(date 1684952954145)
+@@ -4,6 +4,7 @@
+ from django.db.models.signals import post_save
+ from django.dispatch import receiver
+ from datetime import datetime
++from random import randint
+ 
+ # Create your models here.
+ #DEPARTMENT MODEL
+@@ -22,10 +23,12 @@
+     chat_id = models.IntegerField(blank=True, null=True, editable=False)
+     user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
+     phone = models.CharField(max_length=50, verbose_name='Телефон', null=True)
+-    pin_code = models.CharField(max_length=30, verbose_name='Код доступа к боту', null=True)
++    pin_code = models.IntegerField(verbose_name='Код доступа к боту', null=True)
+     sex = models.CharField(max_length=1, choices=SEXES, blank=True, verbose_name='Пол')
+     dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')
+-    department = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
++    department_user = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
++    is_supervisor = models.BooleanField(default=False, verbose_name='Руководитель')
++    supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.CASCADE)
+     job = models.CharField(max_length=100, verbose_name='Должность', blank=True)
+     dateOfHiring = models.DateField(null=True, editable=True, verbose_name='Дата приёма на работу')
+     balance = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Баланс')
+@@ -69,11 +72,11 @@
+ 
+ class Supervisor(models.Model):
+     chat_id = models.IntegerField(blank=True, null=True, editable=False)
+-    user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
+-    department = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
++    sup_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
++    department_sup = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
+ 
+     def __str__(self):
+-        return self.user_fio
++        return self.sup_fio
+ 
+     class Meta:
+         verbose_name = 'Руководитель'
+@@ -96,6 +99,7 @@
+ 
+ class Department(MPTTModel):
+     title = models.CharField(max_length=50, unique=True, verbose_name='Название')
++    #supervisor_dep = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+     parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='children',
+                             db_index=True, verbose_name='Подотдел')
+     slug = models.SlugField()
+@@ -246,8 +250,27 @@
+ #SIGNALS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+ #SIGNAL FOR USER APPROVING/REFUSING++++++++++++++++++++
+-#@receiver(post_save, sender=User)
+-#def save_user_signal(sender, instance, **kwargs):
++@receiver(post_save, sender=User)
++def save_user_signal(sender, instance, **kwargs):
++    if not instance.pin_code:
++        code = randint(1000, 9999)
++        instance.pin_code = code
++        instance.save()
++
++    supervisor = Supervisor.objects.filter(chat_id=instance.chat_id).first()
++
++    if instance.is_supervisor and supervisor:
++        return
++    elif instance.is_supervisor and not supervisor:
++        Supervisor.objects.create(
++            chat_id=instance.chat_id,
++            sup_fio=instance.user_fio,
++            department_sup=instance.department_user
++        )
++    elif not instance.is_supervisor and supervisor:
++        supervisor.delete()
++    elif not instance.is_supervisor and not supervisor:
++        return
+     from .helper import user_saved_signal_approved, user_saved_signal_refused
+     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
+     #print("FFFFFFFFFFFF")
+Index: taskmanager/main/helper.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from django.core.management.base import BaseCommand\r\nfrom django.conf import settings\r\nfrom telebot import types\r\nimport telebot\r\nfrom telegram_bot_calendar import DetailedTelegramCalendar, LSTEP\r\nfrom django.core.signals import request_finished\r\nfrom django.dispatch import receiver\r\nfrom .management.commands.bot import CheckingAvailability\r\n\r\n#+++++++++++++++++++++++++++++++++++++++++++++\r\n\r\ndef user_saved_signal_approved(chat_id):\r\n    print(\"Request finished!\")\r\n    CheckingAvailability.mailing(chat_id,\r\n                                 \"Поздравляем! Вы успешно прошли регистрацию. Нажми /botmenu чтобы воспользоваться функционалом бота.\")\r\n    CheckingAvailability.work_experience(chat_id)\r\n    return\r\n\r\n\r\ndef user_saved_signal_refused(chat_id):\r\n    CheckingAvailability.mailing(chat_id,\r\n                                 \"У нас не получилось убедиться в том, что вы наш сотрудник. Обратитесь в отдел управления персоналом.\")\r\n\r\ndef calculate_work_experience(chat_id):\r\n    CheckingAvailability.work_experience(chat_id)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskmanager/main/helper.py b/taskmanager/main/helper.py
+--- a/taskmanager/main/helper.py	(revision 873e3f0b4ccca9970d52c9172a2837476b6e9d61)
++++ b/taskmanager/main/helper.py	(date 1684952954145)
+@@ -6,6 +6,7 @@
+ from django.core.signals import request_finished
+ from django.dispatch import receiver
+ from .management.commands.bot import CheckingAvailability
++from .management.commands.bot import bot
+ 
+ #+++++++++++++++++++++++++++++++++++++++++++++
+ 
+@@ -22,4 +23,11 @@
+                                  "У нас не получилось убедиться в том, что вы наш сотрудник. Обратитесь в отдел управления персоналом.")
+ 
+ def calculate_work_experience(chat_id):
+-    CheckingAvailability.work_experience(chat_id)
+\ No newline at end of file
++    CheckingAvailability.work_experience(chat_id)
++
++
++class MainMenuBot():
++
++    @staticmethod
++    def mailing(message):
++        bot.send_message(message.from_user.id, "Function success")
+\ No newline at end of file
