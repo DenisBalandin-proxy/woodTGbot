@@ -19,7 +19,24 @@ class PostAdmin(admin.ModelAdmin):
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
     list_display = ("user_fio", "department_user",)
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
-    list_filter = ["access", "department_user"]
+    list_filter = ["access"]
+    search_fields = ["user_fio", "access"]
+    fields = (
+                    "user_fio",
+                    "phone",
+                    "sex",
+                    "dateOfBirth",
+                    "department_user",
+                    "is_supervisor",
+                    "job",
+                    "dateOfHiring",
+                    "supervisors",
+                    "balance",
+                    "wood_coins",
+                    "pin_code",
+                    "access",
+                    "fired"
+                )
 
     def account_actions(self, obj):
         print("WE SAVED USER")
@@ -28,7 +45,7 @@ admin.site.register(User, PostAdmin)
 
 
 class SupervisorAdmin(admin.ModelAdmin):
-    list_display = ("sup_fio", "department_sup")
+    list_display = ("sup_fio",)
 
 admin.site.register(Supervisor, SupervisorAdmin)
 class CategoryAdmin(DjangoMpttAdmin):

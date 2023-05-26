@@ -28,7 +28,7 @@ class User(models.Model):
     dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')
     department_user = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
     is_supervisor = models.BooleanField(default=False, verbose_name='Руководитель')
-    supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.CASCADE)
+    supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.SET_NULL)
     job = models.CharField(max_length=100, verbose_name='Должность', blank=True)
     dateOfHiring = models.DateField(null=True, editable=True, verbose_name='Дата приёма на работу')
     balance = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Баланс')
@@ -71,9 +71,9 @@ class BenefitImages(models.Model):
 
 
 class Supervisor(models.Model):
-    chat_id = models.IntegerField(blank=True, null=True, editable=False)
+    sup_id = models.IntegerField(null=True, editable=False)
     sup_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
-    department_sup = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
+    #department_sup = TreeForeignKey('Department', on_delete=models.PROTECT, related_name='supervisor', verbose_name='Отдел', blank=True, null=True)
 
     def __str__(self):
         return self.sup_fio
@@ -252,25 +252,27 @@ class PaidApplication(models.Model):
 #SIGNAL FOR USER APPROVING/REFUSING++++++++++++++++++++
 @receiver(post_save, sender=User)
 def save_user_signal(sender, instance, **kwargs):
+    print("SAVE SIGNAL")
     if not instance.pin_code:
         code = randint(1000, 9999)
         instance.pin_code = code
-        instance.save()
 
-    supervisor = Supervisor.objects.filter(chat_id=instance.chat_id).first()
+    supervisor = Supervisor.objects.filter(sup_id=instance.pk).first()
 
     if instance.is_supervisor and supervisor:
         return
     elif instance.is_supervisor and not supervisor:
         Supervisor.objects.create(
-            chat_id=instance.chat_id,
+            sup_id=instance.pk,
             sup_fio=instance.user_fio,
-            department_sup=instance.department_user
+            #department_sup=instance.department_user
         )
     elif not instance.is_supervisor and supervisor:
         supervisor.delete()
     elif not instance.is_supervisor and not supervisor:
         return
+    instance.update()
+
     from .helper import user_saved_signal_approved, user_saved_signal_refused
     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
     #print("FFFFFFFFFFFF")
