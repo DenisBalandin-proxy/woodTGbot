@@ -159,6 +159,8 @@ class Command(BaseCommand):
             keyboard.add(key_no)
             key_no = types.InlineKeyboardButton(text='Мои сотрудники 👥', callback_data='workers')
             keyboard.add(key_no)
+            key_no = types.InlineKeyboardButton(text='Больничный ⚕️', callback_data='sick_leave')
+            keyboard.add(key_no)
             question = 'Выберите дальнейшие действия'
             bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
 
@@ -352,7 +354,7 @@ class Command(BaseCommand):
                 file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
                 downloaded_file = bot.download_file(file_info.file_path)
                 file = message.photo[1].file_id + ".jpg"
-                src = "C:/Users/Operator11/Desktop/PC WORK/Python/WoodExport_BOT_DJANGO/taskmanager/media/" + \
+                src = "C:/Users/Operator11/Desktop/WTG/woodTGbot/taskmanager/media/" + \
                     message.photo[1].file_id + ".jpg"
                 with open(src, 'wb') as new_file:
                     new_file.write(downloaded_file)
@@ -417,14 +419,14 @@ class Command(BaseCommand):
 
         @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
         def cal(c):
-            result, key, step = DetailedTelegramCalendar().process(c.data)
+            result, key, step = DetailedTelegramCalendar(locale='ru').process(c.data)
             if not result and key:
                 bot.edit_message_text(f"Select {LSTEP[step]}",
                                       c.message.chat.id,
                                       c.message.message_id,
                                       reply_markup=key)
             elif result:
-                bot.edit_message_text(f"You selected {result}",
+                bot.edit_message_text(f"{result}",
                                       c.message.chat.id,
                                       c.message.message_id)
 
@@ -446,6 +448,9 @@ class Command(BaseCommand):
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             elif call.data == 'workers':
                 my_workers(call.message.chat.id)
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            elif call.data == 'sick_leave':
+                create_celendar(call.message)
                 bot.delete_message(call.message.chat.id, call.message.message_id)
 
                 #bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)

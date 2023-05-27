@@ -256,6 +256,7 @@ def save_user_signal(sender, instance, **kwargs):
     if not instance.pin_code:
         code = randint(1000, 9999)
         instance.pin_code = code
+        instance.save()
 
     supervisor = Supervisor.objects.filter(sup_id=instance.pk).first()
 
@@ -271,7 +272,7 @@ def save_user_signal(sender, instance, **kwargs):
         supervisor.delete()
     elif not instance.is_supervisor and not supervisor:
         return
-    instance.save()
+
 
     #from .helper import user_saved_signal_approved, user_saved_signal_refused
     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
