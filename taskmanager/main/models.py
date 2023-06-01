@@ -7,6 +7,58 @@ from datetime import datetime
 from random import randint
 
 # Create your models here.
+
+#####TEST++++++TEST++++++++TEST+++++++TEST+++++++++++
+class Contact(models.Model):
+
+    name = models.CharField(max_length=50, verbose_name='Имя')
+    phone = models.CharField(max_length=50, verbose_name='Телефон')
+    email = models.EmailField(max_length=50, blank=True, verbose_name='email')
+    body = models.TextField(verbose_name='Текст сообщения')
+
+    class Meta:
+        verbose_name = "Контакт"
+        verbose_name_plural = "Контакты"
+
+    def __str__(self):
+        return "{} {}".format(self.name, self.phone)
+
+
+
+class Files(models.Model):
+
+    file = models.FileField(upload_to='contact', blank=True, null=True, verbose_name='Файл')
+    contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Файлы"
+        verbose_name_plural = "Файлы"
+
+    def __str__(self):
+        return self.file.name
+
+#####TEST++++++TEST++++++++TEST+++++++TEST+++++++++++
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #DEPARTMENT MODEL
 
 class User(models.Model):
@@ -119,8 +171,6 @@ class Department(MPTTModel):
         return self.title
 
 
-
-
 #TEST+++++++++++++++++++++++++++++
 
 #DOCUMENT - ITEM
@@ -157,10 +207,19 @@ class ApplicationForPayment(models.Model):
 
 
 class ApplicationArchive(models.Model):
+    STATE = (
+        ('AP', 'Одобрено'),
+        ('RJ', 'Отклонено'),
+        ('PR', 'На рассмотрении'),
+        ('PM', 'На оплату'),
+        ('P', 'Оплачено')
+    )
+
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
     created = models.DateTimeField(auto_now_add=True)
     fio = models.CharField(max_length=100, blank=True, null=True)
     benefit = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE)
     sum = models.IntegerField(null=True)
 
     class Meta:
@@ -172,9 +231,11 @@ class ApplicationArchive(models.Model):
 
 class ActiveApplication(models.Model):
     STATE = (
-        ('AP', 'Одобрить'),
-        ('RJ', 'Отклонить'),
-        ('PR', 'На рассмотрении')
+        ('AP', 'Одобрено'),
+        ('RJ', 'Отклонено'),
+        ('PR', 'На рассмотрении'),
+        ('PM', 'На оплату'),
+        ('P', 'Оплачено')
     )
 
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
@@ -247,6 +308,23 @@ class PaidApplication(models.Model):
     def __str__(self):
         return f"{self.fio}"
 
+
+#SICK_LEAVE MODELS
+
+class SickLeave(models.Model):
+    chat_id = models.IntegerField(blank=True, null=True, editable=False)
+    fio = models.CharField(max_length=100, blank=True, null=True)
+    department = models.CharField(max_length=100, blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата начала')
+    end_date = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата окончания')
+    class Meta:
+        verbose_name = 'Больничный (активные)'
+        verbose_name_plural = 'Больничный (активные)'
+
+    def __str__(self):
+        return f"{self.fio}"
+
+
 #SIGNALS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #SIGNAL FOR USER APPROVING/REFUSING++++++++++++++++++++
@@ -254,14 +332,15 @@ class PaidApplication(models.Model):
 def save_user_signal(sender, instance, **kwargs):
     print("SAVE SIGNAL")
     if not instance.pin_code:
+        instance.wood_coins = 0
         code = randint(1000, 9999)
         instance.pin_code = code
-        instance.save()
+        instance.save() #COME UP SOMETHING BETTER
 
     supervisor = Supervisor.objects.filter(sup_id=instance.pk).first()
 
     if instance.is_supervisor and supervisor:
-        return
+        pass
     elif instance.is_supervisor and not supervisor:
         Supervisor.objects.create(
             sup_id=instance.pk,
@@ -271,8 +350,7 @@ def save_user_signal(sender, instance, **kwargs):
     elif not instance.is_supervisor and supervisor:
         supervisor.delete()
     elif not instance.is_supervisor and not supervisor:
-        return
-
+        pass
 
     #from .helper import user_saved_signal_approved, user_saved_signal_refused
     #temp_user = TempUser.objects.filter(chat_id=instance.chat_id)
@@ -288,53 +366,80 @@ def save_active_application_signal(sender, instance, **kwargs):
     if not instance.sum:
         return
 
-    if instance.state == "PR":
+    if instance.state == "PR": #NOTIFY USER
         return
 
+    if instance.state == "RJ":
+        print("NOTIFY USER")
+
     if instance.state == "AP":
-        app = ApplicationForPayment.objects.create(
-            chat_id=instance.chat_id,
-            fio=instance.fio,
-            benefit=instance.benefit,
-            sum=instance.sum
-        )
+        print("NOTIFY BUH")
 
-        app_arch = ApplicationArchive.objects.create(
-            chat_id=instance.chat_id,
-            created=datetime.today(),
-            fio=instance.fio,
-            benefit=instance.benefit,
-            sum=instance.sum
-        )
+    if instance.state == "PM":
+        print("NOTIFY USER")
 
-        documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
-
-        for document in documents:
-            DocumentsInApplicationArchive.objects.create(application_archive_id=app_arch.pk, document_id=document.document_id)
-
-        instance.delete()
-
-    elif instance.state == "RJ":
-        ApplicationArchive.objects.create(
+    if instance.state == "P":
+        app = ApplicationArchive.objects.create(
             chat_id=instance.chat_id,
             created=instance.created,
             fio=instance.fio,
             benefit=instance.benefit,
+            state=instance.state,
             sum=instance.sum
         )
 
-        user = User.objects.filter(chat_id=instance.chat_id).first()
+        documents = DocumentsInApplication.objects.filter(application=instance.pk).all()
 
-        current_balance = user.balance
-        user.balance = current_balance + instance.sum
-        user.save()
+        for document in documents:
+            DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.pk)
 
         instance.delete()
 
-    elif instance.state == "PR":
-        return
-    elif instance.sum:
-        return
+    #if instance.state == "AP":
+      #  instan
+        #app = ApplicationForPayment.objects.create(
+        #    chat_id=instance.chat_id,
+        #    fio=instance.fio,
+        #    benefit=instance.benefit,
+        #   sum=instance.sum
+        #)
+
+       # app_arch = ApplicationArchive.objects.create(
+        #    chat_id=instance.chat_id,
+       #     created=datetime.today(),
+     #       fio=instance.fio,
+    #        benefit=instance.benefit,
+     #       sum=instance.sum
+      #  )
+
+      #  documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
+
+    #    for document in documents:
+    #        DocumentsInApplicationArchive.objects.create(application_archive_id=app_arch.pk, document_id=document.document_id)
+
+     #   instance.delete()
+
+   # elif instance.state == "RJ":
+    #    ApplicationArchive.objects.create(
+    #        chat_id=instance.chat_id,
+    #        created=instance.created,
+     #       fio=instance.fio,
+    #        benefit=instance.benefit,
+    #        sum=instance.sum
+    #    )
+
+     #   user = User.objects.filter(chat_id=instance.chat_id).first()
+
+   #     current_balance = user.balance
+   #     user.balance = current_balance + instance.sum
+   #     user.save()
+
+    #    instance.delete()
+
+    #elif instance.state == "PR":
+    #    return
+    #elif instance.sum:
+    #    return
 
 @receiver(post_save, sender=ApplicationForPayment)
 def save_app_for_payment_in_archive(sender, instance, **kwargs):

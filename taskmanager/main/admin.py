@@ -10,7 +10,8 @@ from .models import (
     DocumentsInApplication,
     ApplicationArchive,
     DocumentsInApplicationArchive,
-    PaidApplication)
+    PaidApplication,
+    SickLeave)
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
@@ -20,7 +21,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ("user_fio", "department_user",)
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
     list_filter = ["access", "department_user"]
-    search_fields = ["user_fio", "access"]
+    search_fields = ["user_fio"]
     fields = (
                     "user_fio",
                     "phone",
@@ -79,8 +80,8 @@ class DocumentsInArchiveInLine(admin.StackedInline):
 
 class ApplicationArchiveAdmin(admin.ModelAdmin):
     inlines = [DocumentsInArchiveInLine]
-    readonly_fields = ["fio", "benefit"]
-    list_display = ["fio", "benefit", "created"]
+    readonly_fields = ["fio", "benefit", "sum", "state", "created"]
+    list_display = ["fio", "benefit", "sum", "state", "created"]
 
 admin.site.register(ApplicationArchive, ApplicationArchiveAdmin)
 
@@ -95,7 +96,15 @@ class DocumentInline(admin.StackedInline):
 class ApplicationAdmin(admin.ModelAdmin):
     inlines = [DocumentInline]
     readonly_fields = ["fio", "benefit"]
-    list_display = ["fio", "benefit", "created", "status"]
+    list_filter = ["state"]
+    list_display = ["fio", "benefit", "sum", "state", "created",]
 
 admin.site.register(ActiveApplication, ApplicationAdmin)
 admin.site.register(Document)
+
+
+class SickLeaveActiveApplication(admin.ModelAdmin):
+    list_display = ["fio", "department"]
+
+admin.site.register(SickLeave, SickLeaveActiveApplication)
+
