@@ -263,7 +263,7 @@ class ActiveApplication(models.Model):
 #CONNECT APPLICATION AND DOCUMENT
 class DocumentsInApplication(models.Model):
     application = models.ForeignKey(ActiveApplication, on_delete=models.CASCADE)
-    document = models.ForeignKey(Document, on_delete=models.CASCADE, editable=False)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
     #count = models.IntegerField(default=1)
 
     class Meta:
@@ -323,6 +323,13 @@ class SickLeave(models.Model):
 
     def __str__(self):
         return f"{self.fio}"
+
+
+
+class BenefitSession(models.Model):
+    session_id = models.UUIDField()
+
+
 
 
 #SIGNALS+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

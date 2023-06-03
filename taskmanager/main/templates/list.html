@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Django - Multiple Files Upload</title>
+    </head>
+    <body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<div id="topNavLine">здесь содержимое твоей полоски.</div>
+     <h1>Заявка на гибкие льготы</h1>
+		<div style="margin: auto;">
+			<fieldset name="Multiple Files Upload">
+				{% if msg %} {% autoescape off %} {{ msg }} {% endautoescape %} {% endif %}
+				<form method="post" action="/multiple" enctype="multipart/form-data">
+					{% csrf_token %}
+						<p>
+							{% if product %}
+							{% if benefit %}
+							<input id="benefit" style="font-size:20px;" type="text" name="benefit" value="{{ benefit }}" readonly>
+							<input id="chat_id" type="text" hidden="hidden" name="chat_id" value="{{ product }}" readonly>
+							<input type="file" name="files" autocomplete="off" required multiple>
+							{% endif %}
+							{% endif %}
+						</p>
+					</dl>
+					<p>
+						<input type="submit" value="Upload" style="font-size:20px;">
+					</p>
+				</form>
+			</fieldset>
+		</div>
+	</meta>
+    </body>
+</html>

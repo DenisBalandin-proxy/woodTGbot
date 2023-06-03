@@ -87,11 +87,14 @@ admin.site.register(ApplicationArchive, ApplicationArchiveAdmin)
 
 class DocumentInline(admin.StackedInline):
     model = DocumentsInApplication
-    readonly_fields = ["preview"]
+    readonly_fields = ['preview']
     extra = 0
 
+    def urll(self, obj):
+        return obj.document.image
+
     def preview(self, obj):
-        return mark_safe(f'<img src="{obj.document.image.url}">')
+        return mark_safe(f'<img src="{obj.document.image.url}" width="300" height="300" style="object-fit:contain">')
 
 class ApplicationAdmin(admin.ModelAdmin):
     inlines = [DocumentInline]

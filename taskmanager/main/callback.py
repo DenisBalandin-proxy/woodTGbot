@@ -34,9 +34,27 @@ from .helper import Benefits
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('benefits'))
 def benefits_gate(call):
-    Benefits.select_benefit_gate(call)
+    #Benefits.select_benefit_gate(call)
     #Benefits.testt(call)
+    Benefits.benefits_gate(call)
 
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('traveling'))
+def traveling(call):
+    Benefits.create_benefits_url(call.message, "Путешествие")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('health'))
+def health(call):
+    Benefits.create_benefits_url(call, "Здоровье")
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('education'))
+def education(call):
+    Benefits.create_benefits_url(call, "Образование")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('sport'))
+def sport(call):
+    Benefits.create_benefits_url(call, "Спорт")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('sick_leave'))
 def sick_leave_gate(call):

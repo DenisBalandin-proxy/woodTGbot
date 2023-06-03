@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple login form</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <style>
+      html, body {
+      background: #EBF0F5;
+      display: flex;
+      justify-content: center;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 15px;
+      }
+      form {
+      border: 5px solid #f1f1f1;
+      background: #FFFFFF;
+      }
+      input[type=text], input[type=password] {
+      width: 100%;
+      padding: 16px 8px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 20px;
+      }
+      button {
+      background-color: #8ebf42;
+      color: white;
+      padding: 14px 0;
+      margin: 10px 0;
+      border: none;
+      cursor: grabbing;
+      width: 100%;
+      }
+      h1 {
+      text-align:center;
+      fone-size:18;
+      }
+      button:hover {
+      opacity: 0.8;
+      }
+      .formcontainer {
+      text-align: left;
+      margin: 24px 50px 12px;
+      }
+      .container {
+      padding: 16px 0;
+      text-align:left;
+      }
+      span.psw {
+      float: right;
+      padding-top: 0;
+      padding-right: 15px;
+      }
+      /* Change styles for span on extra small screens */
+      @media screen and (max-width: 300px) {
+      span.psw {
+      display: block;
+      float: none;
+      }
+    </style>
+  </head>
+  <body>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <form method="post" action="/result" enctype="multipart/form-data">
+      <h1>WoodCraft. Гибкие льготы</h1>
+      <div class="formcontainer">
+      <hr/>
+        {% if chat_id %}
+        {% if session_id %}
+        {% if fio %}
+        {% if benefit %}
+        {% if sum %}
+        {% csrf_token %}
+      <div class="container">
+        <input type="hidden" id="chat_id" name="chat_id" value="{{ chat_id }}" readonly>
+        <input type="hidden" id="session_id" name="session_id" value="{{ session_id }}" readonly>
+        <label for="fio"><strong>ФИО</strong></label>
+        <input type="text" name="fio" value="{{ fio }}" readonly>
+        <label for="benefit"><strong>Льгота</strong></label>
+        <input type="text" name="benefit" value="{{ benefit }}" readonly>
+        <label for="sum"><strong>Сумма</strong></label>
+        <input type="text" name="sum" value="{{ sum }}" readonly>
+        <label for="files"><strong>Прикрепите фотографии</strong></label><br></br>
+        <input type="file" name="files" autocomplete="off" required multiple>
+      </div>
+        <button type="submit">Отправить заявку</button>
+        {% endif %}
+        {% endif %}
+        {% endif %}
+        {% endif %}
+        {% endif %}
+    </form>
+  </meta>
+  </body>
+</html>

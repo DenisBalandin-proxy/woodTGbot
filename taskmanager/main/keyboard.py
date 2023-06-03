@@ -38,6 +38,43 @@ def tg_bot_menu():
     )
     return markup
 
+
+def list_of_benefits():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Путешествие',
+            callback_data='traveling'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Здоровье',
+            callback_data='health'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Образование',
+            callback_data='education'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Спорт',
+            callback_data='sport'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Выход 🔙',
+            callback_data='back'
+        )
+    )
+    return markup
+
+
+
 def benefits_create_app():
     markup = types.InlineKeyboardMarkup()
     markup.add(
@@ -57,6 +94,9 @@ def benefits_create_app():
         )
     )
     return markup
+
+
+
 
 #SICK_LEAVE
 def sick_leave_menu():

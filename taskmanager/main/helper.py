@@ -1,14 +1,38 @@
+import uuid
+import webbrowser
+
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from telebot import types
+from django import db
 import telebot
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from django.core.signals import request_finished
 from django.dispatch import receiver
 from .management.commands.bot import CheckingAvailability
-from .models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department, SickLeave
+from .models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department, SickLeave, BenefitSession
 from .bot_init import bot
+import threading
+import time
 #from .management.commands.bot import bot
+
+
+class MyThread(threading.Thread):
+    def __init__(self, id):
+        super(MyThread, self).__init__()
+        self.id = id
+        #threading.Timer(5.0, MyThread.run).start()  # Перезапуск через 5 секунд
+
+    def run(self):
+        time.sleep(10 * 60)
+        session = BenefitSession.objects.filter(session_id=self.id).first()
+        if session:
+           session.delete()
+           db.connections.close_all()
+        #print (self.id)
+
+
+
 
 #+++++++++++++++++++++++++++++++++++++++++++++
 
@@ -41,9 +65,68 @@ class MainMenuBot():
 class Benefits():
 
     @staticmethod
-    def testt(message):
-        if bot.get_updates():
-            print("HAVA LULU")
+    def benefits_gate(message):
+        check_user = CheckingAvailability.check_user(message)
+
+        if check_user == False:
+            return
+
+        from .keyboard import list_of_benefits
+        keyboard = list_of_benefits()
+
+
+        #threading.Timer(5.0, Benefits.f(message)).start()  # Перезапуск через 5 секунд
+
+        text = "Выбирите льготу"
+        bot.send_message(message.from_user.id, text=text, reply_markup=keyboard)
+
+
+    @staticmethod
+    def f(message):
+        print(message.id)
+
+    @staticmethod
+    def create_benefits_url(message, benefit):
+        if message.content_type != 'text' or not message.text:
+            bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
+        else:
+            if message.text.isdigit():
+                user = User.objects.filter(chat_id=message.from_user.id).first()
+                integer_sum = int(message.text)
+                if user.balance >= integer_sum and integer_sum > 0:
+                    session_id = uuid.uuid4()
+
+                    BenefitSession.objects.create(session_id=session_id)
+
+                    thread = MyThread(session_id)
+                    thread.start()
+
+                    #time.sleep(10)
+
+                    #user.save()
+
+                    url = f"<a href='http://31.28.192.4:8000/benefits/{user.chat_id}/{session_id}/{user.user_fio}/{benefit}/{integer_sum}'><b>СCЫЛКА НА ФОРМУ ЗАЯВКИ</b></a>"
+                    bot.send_message(message.from_user.id, url, parse_mode="HTML")
+                    return
+        bot.send_message(message.chat.id, "Введите сумму выплаты")
+        bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
+
+
+    @staticmethod
+    def select_ben(message):
+        if message.content_type == 'text':
+            chat_id = message.from_user.id
+            benefit = message.text
+
+            #CREATE SESSION DB !!!!!!!!!!+!+!+!+!++++++!+!+!+!+!+!+!+!+
+            session_id = uuid.uuid4()
+
+            prepared_url = f"<a href='http://31.28.192.4:8000/user/{chat_id}/{benefit}'><b>Ссылка на оформление заявки</b></a>"
+            url = f"http://31.28.192.4:8000/user/{chat_id}/{benefit}"
+            bot.send_message(message.from_user.id, url, parse_mode="HTML")
+            #webbrowser.open(url, new=2)
+        else:
+            print()
 
     @staticmethod
     def select_benefit_gate(message):
@@ -260,3 +343,8 @@ class MyWorkers():
             if user.user_fio == message.text:
                 info = "Баланс: " + user.balance + "\nДата рождения: " + user.dateOfBirth
                 bot.send_message(message, info)
+
+
+    @staticmethod
+    def kill_session(message):
+        session = BenefitSession.objects.filter()
