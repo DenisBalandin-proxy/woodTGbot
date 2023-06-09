@@ -19,7 +19,7 @@ from django.utils.safestring import mark_safe
 
 class PostAdmin(admin.ModelAdmin):
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
-    list_display = ("user_fio", "department_user", "job")
+    list_display = ("user_fio", "department_user", "job", "show_head_of_department")
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
     list_filter = ["access", "department_user"]
     search_fields = ["user_fio"]
@@ -32,7 +32,7 @@ class PostAdmin(admin.ModelAdmin):
                     "is_supervisor",
                     "job",
                     "dateOfHiring",
-                    "supervisors",
+                    #"show_head_of_department",
                     "balance",
                     "wood_coins",
                     "pin_code",
@@ -42,6 +42,9 @@ class PostAdmin(admin.ModelAdmin):
 
     def account_actions(self, obj):
         print("WE SAVED USER")
+
+    def show_head_of_department(self, obj):
+        return mark_safe(obj.department_user.head)
 
 admin.site.register(User, PostAdmin)
 

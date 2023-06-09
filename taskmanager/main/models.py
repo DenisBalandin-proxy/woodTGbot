@@ -152,6 +152,7 @@ class TempUser(models.Model):
 
 class Department(MPTTModel):
     title = models.CharField(max_length=50, unique=True, verbose_name='Название')
+    head = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.SET_NULL)
     #supervisor_dep = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='children',
                             db_index=True, verbose_name='Подотдел')
