@@ -17,6 +17,7 @@ import time
 #from .management.commands.bot import bot
 
 
+#ОТПРАВЛЯЕТ СЕССИЮ НА НОВЫЙ ПОТОК
 class MyThread(threading.Thread):
     def __init__(self, id):
         super(MyThread, self).__init__()
@@ -69,16 +70,12 @@ class Benefits():
         check_user = CheckingAvailability.check_user(message)
 
         if check_user == False:
-            return
-
-        from .keyboard import list_of_benefits
-        keyboard = list_of_benefits()
-
+           return
 
         #threading.Timer(5.0, Benefits.f(message)).start()  # Перезапуск через 5 секунд
-
-        text = "Выбирите льготу"
-        bot.send_message(message.from_user.id, text=text, reply_markup=keyboard)
+        from .keyboard import list_of_benefits
+        keyboard = list_of_benefits()
+        bot.edit_message_text("Выбирите льготу", message.from_user.id, message.message.message_id, reply_markup=keyboard)
 
 
     @staticmethod
@@ -87,13 +84,27 @@ class Benefits():
 
     @staticmethod
     def create_benefits_url(message, benefit):
-        if message.content_type != 'text' or not message.text:
+        current_benefit = None
+
+        if message.content_type != 'text':
             bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
         else:
             if message.text.isdigit():
                 user = User.objects.filter(chat_id=message.from_user.id).first()
                 integer_sum = int(message.text)
                 if user.balance >= integer_sum and integer_sum > 0:
+
+                    if benefit == 'travelign':
+                        current_benefit = "Путешествие"
+                    elif benefit == 'health':
+                        current_benefit = "Здоровье"
+                    elif benefit == 'education':
+                        current_benefit = "Образование"
+                    elif benefit == 'sport':
+                        current_benefit = "Спорт"
+
+                    #user.balance = user.balance - integer_sum
+
                     session_id = uuid.uuid4()
 
                     BenefitSession.objects.create(session_id=session_id)
@@ -105,11 +116,16 @@ class Benefits():
 
                     #user.save()
 
-                    url = f"<a href='http://31.28.192.4:8000/benefits/{user.chat_id}/{session_id}/{user.user_fio}/{benefit}/{integer_sum}'><b>СCЫЛКА НА ФОРМУ ЗАЯВКИ</b></a>"
+                    url = f"<a href='http://31.28.192.4:8000/benefits/{user.chat_id}/{session_id}/{user.user_fio}/{current_benefit}/{integer_sum}'><b>👉СCЫЛКА НА ОФОРМЛЕНИЕ ЗАЯВКИ👈</b></a>"
                     bot.send_message(message.from_user.id, url, parse_mode="HTML")
-                    return
-        bot.send_message(message.chat.id, "Введите сумму выплаты")
-        bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
+
+                    #user.save()
+                else:
+                    bot.send_message(message.from_user.id, "Введённая сумма больше баланса")
+                    bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
+            else:
+                bot.send_message(message.from_user.id, "Введите сумму цифрами")
+                bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
 
 
     @staticmethod
@@ -218,7 +234,7 @@ class Benefits():
             file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
             downloaded_file = bot.download_file(file_info.file_path)
             file = message.photo[1].file_id + ".jpg"
-            src = "C:/Users/Operator11/Desktop/WTG/woodTGbot/taskmanager/media/" + \
+            src = "C:/Users/Operator11/Desktop/WTG/woodTGbot/wood_export_bot/media/" + \
                   message.photo[1].file_id + ".jpg"
             with open(src, 'wb') as new_file:
                 new_file.write(downloaded_file)
@@ -299,6 +315,17 @@ class Benefits():
         else:
             bot.send_message(message.from_user.id, "Заявка не сформирована")
 
+
+
+
+class Balance():
+    @staticmethod
+    def receive_my_balance(message):
+        print(message.chat.id)
+        user = User.objects.filter(chat_id=message.chat.id).first()
+        print(user)
+        balance = user.balance
+        bot.send_message(message.chat.id, f"Ваш баланс: {balance}")
 
 
 

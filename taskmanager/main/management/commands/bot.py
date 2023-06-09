@@ -5,9 +5,11 @@ from django.conf import settings
 from telebot import types
 import telebot
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department
+from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department, BenefitSession
 from datetime import datetime, time, date
 from ...bot_init import bot
+from ...tasks import supper_sum
+#from ....wood_export_bot.celery import app
 from ...sick_leave import Sick_Leave
 #from ...keyboard import *
 #from ...callback import *
@@ -59,6 +61,15 @@ class Command(BaseCommand):
   	# Используется как описание команды обычно
     help = 'Implemented to Django application telegram bot setup command'
 
+    sessions = BenefitSession.objects.all()
+
+    if sessions:
+        sessions.delete()
+
+
+    #for i in range(1, 100):
+     #   add(i, i)
+
     def handle(self, *args, **options):
         description = """
         Команды чат-бота.
@@ -70,6 +81,12 @@ class Command(BaseCommand):
         # REGISTRATION_MENU+++++++++++++++++++++++++++++
         @bot.message_handler(commands=['start', 'auth'])
         def auth_process(message):
+
+            supper_sum(5, 7)
+
+            print("ENDD")
+            #print()
+            bot.send_message(630157933, "FOCKIN YEAH")
             user = User.objects.filter(chat_id=message.from_user.id).first()
 
             if user:

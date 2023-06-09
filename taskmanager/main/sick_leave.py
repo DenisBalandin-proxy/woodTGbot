@@ -78,3 +78,13 @@ class Sick_Leave():
         #app = SickLeave.objects.filter(chat_id=message.from_user.id, start_date=message.text).first()
         #Sick_Leave.application = app
         #Sick_Leave.create_celendar(message)
+
+    @staticmethod
+    def notify_supervisor_start(message):
+        print("notify supervisor")
+        print("notify buh")
+
+    @staticmethod
+    def notify_supervisor_end(message):
+        print("notify supervisor")
+        print("notify buh")

@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
 from random import randint
+from .bot_init import bot
 
 # Create your models here.
 
@@ -189,17 +190,24 @@ class Document(models.Model):
 
 class ApplicationForPayment(models.Model):
 
+    STATE = (
+        ('PR', 'Ожидает выплаты'),
+        ('PM', 'На оплату'),
+        #('P', 'Оплачено')
+    )
+
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
-    fio = models.CharField(max_length=100, blank=True, null=True)
-    benefit = models.CharField(max_length=100, blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True, null=True)
-    sum = models.IntegerField(null=True)
-    state = models.CharField(max_length=100, blank=True, null=True, default='Ожидает выплаты')
+    fio = models.CharField(max_length=100, blank=True, null=True, verbose_name='ФИО')
+    benefit = models.CharField(max_length=100, blank=True, null=True, verbose_name='Льгота')
+    created = models.DateTimeField(auto_now_add=True, null=True, verbose_name='Сформирована')
+    sum = models.IntegerField(null=True, verbose_name='Сумма выплаты')
+    date_of_payment = models.DateField(null=True, editable=True, verbose_name='Дата выплаты')
+    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE, default='PR', verbose_name='Состояние')
     status = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Заявления к выплате'
-        verbose_name_plural = 'Заявления к выплате'
+        verbose_name = 'Гибкие льготы (к выплате)'
+        verbose_name_plural = 'Гибкие льготы (к выплате)'
 
     def __str__(self):
         return f"{self.fio}"
@@ -208,23 +216,24 @@ class ApplicationForPayment(models.Model):
 
 class ApplicationArchive(models.Model):
     STATE = (
-        ('AP', 'Одобрено'),
+        #('AP', 'Одобрено'),
         ('RJ', 'Отклонено'),
-        ('PR', 'На рассмотрении'),
-        ('PM', 'На оплату'),
+        #('PR', 'На рассмотрении'),
+        #('PM', 'На оплату'),
         ('P', 'Оплачено')
     )
 
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
-    created = models.DateTimeField(auto_now_add=True)
-    fio = models.CharField(max_length=100, blank=True, null=True)
-    benefit = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE)
-    sum = models.IntegerField(null=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Перемещение')
+    fio = models.CharField(max_length=100, blank=True, null=True, verbose_name='ФИО')
+    benefit = models.CharField(max_length=100, blank=True, null=True, verbose_name='Льгота')
+    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE, verbose_name='Состояние')
+    description = models.TextField(max_length=500, blank=True, null=True, verbose_name='Комментарий')
+    sum = models.IntegerField(null=True, verbose_name='Сумма выплаты')
 
     class Meta:
-        verbose_name = 'Архив заявлений'
-        verbose_name_plural = 'Архив заявлений'
+        verbose_name = 'Архив гибких льгот'
+        verbose_name_plural = 'Архив гибких льгот'
 
     def __str__(self):
         return f"{self.fio}"
@@ -234,21 +243,22 @@ class ActiveApplication(models.Model):
         ('AP', 'Одобрено'),
         ('RJ', 'Отклонено'),
         ('PR', 'На рассмотрении'),
-        ('PM', 'На оплату'),
-        ('P', 'Оплачено')
+        #('PM', 'На оплату'),
+        #('P', 'Оплачено')
     )
 
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
-    created = models.DateTimeField(auto_now_add=True)
-    fio = models.CharField(max_length=100, blank=True, null=True)
-    benefit = models.CharField(max_length=100, blank=True, null=True)
-    sum = models.IntegerField(null=True)
-    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE, default="PR")
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Сформирована')
+    fio = models.CharField(max_length=100, blank=True, null=True, verbose_name='ФИО')
+    benefit = models.CharField(max_length=100, blank=True, null=True, verbose_name='Льгота')
+    sum = models.IntegerField(null=True, verbose_name='Сумма выплаты')
+    state = models.CharField(max_length=100, blank=True, null=True, choices=STATE, default="PR", verbose_name='Состояние')
+    description = models.TextField(max_length=500, blank=True, null=True, verbose_name='Укажите причину при отклонении заявления')
     status = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Активные заявления'
-        verbose_name_plural = 'Активные заявления'
+        verbose_name = 'Гибкие льготы (активные)'
+        verbose_name_plural = 'Гибкие льготы (активные)'
 
     def total_price(self):
         return sum([
@@ -277,6 +287,16 @@ class DocumentsInApplication(models.Model):
         return self.document.document
 
 
+class DocumentsInApplicationForPayment(models.Model):
+    application_payment = models.ForeignKey(ApplicationForPayment, on_delete=models.CASCADE, null=True)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, editable=False)
+
+    class Meta:
+        verbose_name = 'Пакет документов'
+
+    def __str__(self):
+        return self.document.document
+
 class DocumentsInApplicationArchive(models.Model):
     application_archive = models.ForeignKey(ApplicationArchive, on_delete=models.CASCADE, null=True)
     document = models.ForeignKey(Document, on_delete=models.CASCADE, editable=False)
@@ -293,21 +313,6 @@ class DocumentsInApplicationArchive(models.Model):
         return self.document.document
 
 
-class PaidApplication(models.Model):
-    chat_id = models.IntegerField(blank=True, null=True, editable=False)
-    fio = models.CharField(max_length=100, blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    benefit = models.CharField(max_length=100, blank=True, null=True)
-    sum = models.IntegerField(null=True)
-
-    class Meta:
-        verbose_name = 'Выплаченные заявления'
-        verbose_name_plural = 'Выплаченные заявления'
-
-
-    def __str__(self):
-        return f"{self.fio}"
-
 
 #SICK_LEAVE MODELS
 
@@ -317,6 +322,7 @@ class SickLeave(models.Model):
     department = models.CharField(max_length=100, blank=True, null=True)
     start_date = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата начала')
     end_date = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата окончания')
+
     class Meta:
         verbose_name = 'Больничный (активные)'
         verbose_name_plural = 'Больничный (активные)'
@@ -328,6 +334,32 @@ class SickLeave(models.Model):
 
 class BenefitSession(models.Model):
     session_id = models.UUIDField()
+
+
+
+
+
+#MODEL FOR APPLICATIONS ROLE
+
+class ApplicationRoleNotification(models.Model):
+
+    ROLES = (
+        ("CA", "Касса"),
+        ("G", "Утверждает документ")
+    )
+
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name='Заголовок')
+    description = models.TextField(max_length=500, blank=True, null=True, verbose_name='Описание')
+    role = models.CharField(max_length=100, blank=True, null=True, choices=ROLES, verbose_name='Роль')
+    person = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Получатель уведомления')
+
+    class Meta:
+        verbose_name = 'Оповещения'
+        verbose_name_plural = 'Оповещения'
+
+    def __str__(self):
+        return f"{self.title}"
+
 
 
 
@@ -374,16 +406,68 @@ def save_active_application_signal(sender, instance, **kwargs):
         return
 
     if instance.state == "PR": #NOTIFY USER
-        return
+        buhi = ApplicationRoleNotification.objects.filter(role='G').all()
+
+        users = []
+        for buh in buhi:
+            if buh.person_id:
+                user = User.objects.filter(id=buh.person_id).first()
+                users.append(user)
+
+        if not users:
+            return
+
+        for user in users:
+            text = f"Новая заявка на льготы.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}"
+            bot.send_message(user.chat_id, text)
+
 
     if instance.state == "RJ":
         print("NOTIFY USER")
+        user = User.objects.filter(chat_id=instance.chat_id).first()
+
+        app = ApplicationArchive.objects.create(
+            chat_id=instance.chat_id,
+            created=instance.created,
+            fio=instance.fio,
+            benefit=instance.benefit,
+            state=instance.state,
+            sum=instance.sum
+        )
+
+        documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
+
+        for document in documents:
+            DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.pk)
+
+
+        user.balance = instance.sum + user.balance
+        user.save()
+
+        text = f"Заявка отклонена.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}\nПричина: {instance.description}"
+        bot.send_message(user.chat_id, text)
+
+        instance.delete()
+
 
     if instance.state == "AP":
-        print("NOTIFY BUH")
+        print("NOTIFY BUH KASSIR")
+        app = ApplicationForPayment.objects.create(
+            chat_id=instance.chat_id,
+            created=instance.created,
+            fio=instance.fio,
+            benefit=instance.benefit,
+            state='PR',
+            sum=instance.sum
+        )
 
-    if instance.state == "PM":
-        print("NOTIFY USER")
+        documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
+
+        for document in documents:
+            DocumentsInApplicationForPayment.objects.create(application_payment_id=app.pk, document_id=document.pk)
+
+        instance.delete()
+
 
     if instance.state == "P":
         app = ApplicationArchive.objects.create(
@@ -395,7 +479,7 @@ def save_active_application_signal(sender, instance, **kwargs):
             sum=instance.sum
         )
 
-        documents = DocumentsInApplication.objects.filter(application=instance.pk).all()
+        documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
 
         for document in documents:
             DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.pk)
@@ -447,16 +531,4 @@ def save_active_application_signal(sender, instance, **kwargs):
     #    return
     #elif instance.sum:
     #    return
-
-@receiver(post_save, sender=ApplicationForPayment)
-def save_app_for_payment_in_archive(sender, instance, **kwargs):
-    if instance.status:
-        PaidApplication.objects.create(
-            chat_id=instance.chat_id,
-            created=datetime.today(),
-            fio=instance.fio,
-            benefit=instance.benefit,
-            sum=instance.sum
-        )
-        instance.delete()
 

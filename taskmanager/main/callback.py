@@ -3,7 +3,7 @@ from telebot import types
 from .bot_init import bot
 from .sick_leave import Sick_Leave
 from .models import SickLeave
-from .helper import Benefits
+from .helper import Benefits, Balance
 
 
 #@bot.callback_query_handler(func=lambda call: True)
@@ -41,20 +41,30 @@ def benefits_gate(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('traveling'))
 def traveling(call):
-    Benefits.create_benefits_url(call.message, "Путешествие")
+    bot.send_message(call.message.chat.id, "Введите сумму выплаты")
+    bot.register_next_step_handler(call.message, Benefits.create_benefits_url, call.data)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+    #Benefits.create_benefits_url(call.message, "Путешествие")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('health'))
 def health(call):
-    Benefits.create_benefits_url(call, "Здоровье")
+    bot.send_message(call.message.chat.id, "Введите сумму выплаты")
+    bot.register_next_step_handler(call.message, Benefits.create_benefits_url, call.data)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('education'))
 def education(call):
-    Benefits.create_benefits_url(call, "Образование")
+    bot.send_message(call.message.chat.id, "Введите сумму выплаты")
+    bot.register_next_step_handler(call.message, Benefits.create_benefits_url, call.data)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('sport'))
 def sport(call):
-    Benefits.create_benefits_url(call, "Спорт")
+    bot.send_message(call.message.chat.id, "Введите сумму выплаты")
+    bot.register_next_step_handler(call.message, Benefits.create_benefits_url, call.data)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('sick_leave'))
 def sick_leave_gate(call):
@@ -105,3 +115,13 @@ def back_to_menu(call):
     from .keyboard import tg_bot_menu
     keyboard = tg_bot_menu()
     bot.edit_message_text("Выбирите действие", call.message.chat.id, call.message.message_id, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('my_balance'))
+def receive_balance(call):
+    Balance.receive_my_balance(call.message)
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('exit'))
+def exit_main_menu(call):
+    bot.delete_message(call.message.chat.id, call.message.message_id)

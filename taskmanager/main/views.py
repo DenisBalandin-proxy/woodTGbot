@@ -29,10 +29,13 @@ def user_detail(request, id, benefit):
 def show_application(request, chat_id, session_id, fio, benefit, sum):
     session = BenefitSession.objects.filter(session_id=session_id).first()
 
+
+
     if session:
+        user = User.objects.filter(chat_id=chat_id).first()
         return render(request, 'benefit.html', {'chat_id': chat_id,
                                                 'session_id': session_id,
-                                                'fio': fio,
+                                                'fio': user.user_fio,
                                                 'benefit': benefit,
                                                 'sum': sum})
     else:
@@ -67,7 +70,9 @@ def benefit_application(request):
 
                 for f in files:
                     handle_uploaded_file(f, app.pk)
-                context = {'msg': '<span style="color: green;">File successfully uploaded</span>'}
+                #context = {'msg': '<span style="color: green;">File successfully uploaded</span>'}
+                user.balance = user.balance - sum
+                user.save()
                 print("render succes html")
                 return render(request, "success.html")
             else:
@@ -91,7 +96,7 @@ def test(request):
 
 
 @ensure_csrf_cookie
-def upload_multiple_files(request):
+def upload_multiple_filess(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES, request.GET)
         files = request.FILES.getlist('files')
@@ -99,6 +104,7 @@ def upload_multiple_files(request):
         if form.is_valid():
             chat_id = form.cleaned_data['chat_id']
             benefit = form.cleaned_data['benefit']
+            sum = form.cleaned_data['sum']
             print(chat_id)
 
             user = User.objects.filter(chat_id=chat_id).first()
@@ -106,7 +112,7 @@ def upload_multiple_files(request):
             app = ActiveApplication.objects.create(chat_id=chat_id,
                                                    fio=user.user_fio,
                                                    benefit=benefit,
-                                                   sum=100)
+                                                   sum=sum)
 
             for f in files:
                 handle_uploaded_file(f, app.pk)
@@ -118,7 +124,7 @@ def upload_multiple_files(request):
 
 def handle_uploaded_file(f, app_id):
     file_name = str(uuid.uuid4()) + ".jpg"
-    src = "C:/Users/Operator11/Desktop/WTG/woodTGbot/taskmanager/media/" + \
+    src = "media/" + \
           file_name
 
     document = Document.objects.create(document="Документ", image=file_name)

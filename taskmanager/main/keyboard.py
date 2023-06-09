@@ -18,18 +18,18 @@ def tg_bot_menu():
             callback_data='my_balance'
         )
     )
-    markup.add(
-        types.InlineKeyboardButton(
-            text='Мои сотрудники 👥',
-            callback_data='my_workers'
-        )
-    )
-    markup.add(
-        types.InlineKeyboardButton(
-            text='Больничный ⚕️',
-            callback_data='sick_leave'
-        )
-    )
+#    markup.add(
+#        types.InlineKeyboardButton(
+#            text='Мои сотрудники 👥',
+#            callback_data='my_workers'
+#        )
+#    )
+#    markup.add(
+#        types.InlineKeyboardButton(
+#            text='Больничный ⚕️',
+#            callback_data='sick_leave'
+#        )
+#    )
     markup.add(
         types.InlineKeyboardButton(
             text='Выход 🔙',

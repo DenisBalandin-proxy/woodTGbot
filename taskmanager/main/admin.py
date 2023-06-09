@@ -5,12 +5,13 @@ from .models import (
     Department,
     Supervisor,
     ApplicationForPayment,
+    DocumentsInApplicationForPayment,
     Document,
     ActiveApplication,
     DocumentsInApplication,
     ApplicationArchive,
     DocumentsInApplicationArchive,
-    PaidApplication,
+    ApplicationRoleNotification,
     SickLeave)
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
@@ -18,7 +19,7 @@ from django.utils.safestring import mark_safe
 
 class PostAdmin(admin.ModelAdmin):
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
-    list_display = ("user_fio", "department_user",)
+    list_display = ("user_fio", "department_user", "job")
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
     list_filter = ["access", "department_user"]
     search_fields = ["user_fio"]
@@ -56,18 +57,22 @@ admin.site.register(Department, CategoryAdmin)
 
 
 #TEST++++++++++++++++++++++++++++++++++++++++
+class DocumentsInApplicationForPaymentInLine(admin.StackedInline):
+    model = DocumentsInApplicationForPayment
+    readonly_fields = ["preview"]
+    extra = 0
 
-class AppForPaymentAdmin(admin.ModelAdmin):
-    list_display = ("fio", "benefit", "sum", "state", "status")
-    readonly_fields = ("fio", "benefit", "sum", "state")
+    def preview(self, obj):
+        return mark_safe(f'<img src="{obj.document.image.url}" width="300" height="300" style="object-fit:contain">')
 
-admin.site.register(ApplicationForPayment, AppForPaymentAdmin)
 
-class PaidApplicationAdmin(admin.ModelAdmin):
-    list_display = ("fio", "benefit", "sum", "created")
-    readonly_fields = ("fio", "benefit", "sum", "created")
+class ApplicationForPaymentAdmin(admin.ModelAdmin):
+    inlines  = [DocumentsInApplicationForPaymentInLine]
+    readonly_fields = ["fio", "benefit", "sum", "created"]
+    list_display = ["fio", "benefit", "sum", "state", "created"]
 
-admin.site.register(PaidApplication, PaidApplicationAdmin)
+admin.site.register(ApplicationForPayment, ApplicationForPaymentAdmin)
+
 
 class DocumentsInArchiveInLine(admin.StackedInline):
     model = DocumentsInApplicationArchive
@@ -75,12 +80,12 @@ class DocumentsInArchiveInLine(admin.StackedInline):
     extra = 0
 
     def preview(self, obj):
-        return mark_safe(f'<img src="{obj.document.image.url}">')
+        return mark_safe(f'<img src="{obj.document.image.url}" width="300" height="300" style="object-fit:contain">')
 
 
 class ApplicationArchiveAdmin(admin.ModelAdmin):
     inlines = [DocumentsInArchiveInLine]
-    readonly_fields = ["fio", "benefit", "sum", "state", "created"]
+    readonly_fields = ["fio", "benefit", "sum", "state", "description", "created"]
     list_display = ["fio", "benefit", "sum", "state", "created"]
 
 admin.site.register(ApplicationArchive, ApplicationArchiveAdmin)
@@ -98,7 +103,7 @@ class DocumentInline(admin.StackedInline):
 
 class ApplicationAdmin(admin.ModelAdmin):
     inlines = [DocumentInline]
-    readonly_fields = ["fio", "benefit"]
+    readonly_fields = ["fio", "benefit", "sum", "created",]
     list_filter = ["state"]
     list_display = ["fio", "benefit", "sum", "state", "created",]
 
@@ -111,3 +116,8 @@ class SickLeaveActiveApplication(admin.ModelAdmin):
 
 admin.site.register(SickLeave, SickLeaveActiveApplication)
 
+
+class ApplicationRoleNotificationAdmin(admin.ModelAdmin):
+    list_display = ["title"]
+
+admin.site.register(ApplicationRoleNotification, ApplicationRoleNotificationAdmin)

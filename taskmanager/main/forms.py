@@ -2,7 +2,7 @@ from django import forms
 from .models import Contact
 
 def getPath():
-    return 'C:/Users/Operator11/Desktop/WTG/woodTGbot/taskmanager/media/fff.jpg'
+    return 'C:/Users/Operator11/Desktop/WTG/woodTGbot/wood_export_bot/media/fff.jpg'
 class UploadFileForm(forms.Form):
     #file = forms.FileField()
     chat_id = forms.IntegerField(label='chat_id')

@@ -4,25 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Big update">
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/benefit.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/failure.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/home.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/success.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/user.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/views.py" afterDir="false" />
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Benefit form + Home page">
+      <change afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/celery.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/WoodExport_BOT_DJANGO.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/WoodExport_BOT_DJANGO.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/callback.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/callback.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/helper.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/keyboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/keyboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/main/management/commands/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/management/commands/bot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/taskmanager/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/taskmanager/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/template/list.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/main/sick_leave.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/sick_leave.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/asgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/taskmanager/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/wsgi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,8 +40,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -85,8 +87,8 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Operator11/Desktop/WTG/woodTGbot&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Operator11/Desktop/WTG/woodTGbot/taskmanager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Mercurial&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;ChangesTree.GroupingKeys&quot;: [
@@ -97,11 +99,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\taskmanager" />
+      <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main" />
       <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main\templates\scss" />
       <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main\templates\scss\bootstrap" />
       <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main\templates\scss\bootstrap\vendor" />
-      <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main\templates\scss\bootstrap\utilities" />
-      <recent name="C:\Users\Operator11\Desktop\WTG\woodTGbot\taskmanager\main\templates\scss\bootstrap\mixins" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -260,7 +262,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685603252439</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Benefit form + Home page">
+      <created>1685794084413</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1685794084413</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -386,6 +395,7 @@
     <MESSAGE value="Save instace" />
     <MESSAGE value="Add save instace" />
     <MESSAGE value="Big update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Big update" />
+    <MESSAGE value="Benefit form + Home page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Benefit form + Home page" />
   </component>
 </project>
