@@ -9,13 +9,7 @@ def tg_bot_menu():
     markup.add(
         types.InlineKeyboardButton(
             text='Гибкие льготы 📝',
-            callback_data='benefits'
-        )
-    )
-    markup.add(
-        types.InlineKeyboardButton(
-            text='Мой баланс 💵',
-            callback_data='my_balance'
+            callback_data='benefit_menu'
         )
     )
 #    markup.add(
@@ -37,6 +31,37 @@ def tg_bot_menu():
         )
     )
     return markup
+
+
+def benefit_menu():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Оформить выплату',
+            callback_data='benefits'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='О программе',
+            callback_data='about_program'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Мой баланс 💵',
+            callback_data='my_balance'
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Выход 🔙',
+            callback_data='back_to_main_menu'
+        )
+    )
+    return markup
+
+
 
 
 def list_of_benefits():
@@ -68,7 +93,7 @@ def list_of_benefits():
     markup.add(
         types.InlineKeyboardButton(
             text='Выход 🔙',
-            callback_data='back'
+            callback_data='back_to_benefit_menu'
         )
     )
     return markup

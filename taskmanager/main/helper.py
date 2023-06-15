@@ -72,6 +72,12 @@ class Benefits():
         if check_user == False:
            return
 
+        check_experience = CheckingAvailability.work_experience_more_than_90_days(message)
+
+        if check_experience == False:
+            #bot.delete_message(message.message.chat.id, message.message.message_id)
+            return
+
         #threading.Timer(5.0, Benefits.f(message)).start()  # Перезапуск через 5 секунд
         from .keyboard import list_of_benefits
         keyboard = list_of_benefits()
@@ -116,7 +122,7 @@ class Benefits():
 
                     #user.save()
 
-                    url = f"<a href='http://31.28.192.4:8000/benefits/{user.chat_id}/{session_id}/{user.user_fio}/{current_benefit}/{integer_sum}'><b>👉СCЫЛКА НА ОФОРМЛЕНИЕ ЗАЯВКИ👈</b></a>"
+                    url = f"<a href='http://127.0.0.1:8000/benefits/{user.chat_id}/{session_id}/{user.user_fio}/{current_benefit}/{integer_sum}'><b>👉СCЫЛКА НА ОФОРМЛЕНИЕ ЗАЯВКИ👈</b></a>"
                     bot.send_message(message.from_user.id, url, parse_mode="HTML")
 
                     #user.save()
@@ -325,7 +331,8 @@ class Balance():
         user = User.objects.filter(chat_id=message.chat.id).first()
         print(user)
         balance = user.balance
-        bot.send_message(message.chat.id, f"Ваш баланс: {balance}")
+        #bot.send_message(message.chat.id, f"Ваш баланс: {balance}")
+        bot.edit_message_text(f"Ваш баланс: {balance}", message.chat.id, message.message_id)
 
 
 

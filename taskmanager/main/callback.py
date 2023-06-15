@@ -32,12 +32,19 @@ from .helper import Benefits, Balance
 #        bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('benefits'))
+@bot.callback_query_handler(func=lambda call: call.data.startswith('benefit_menu'))
 def benefits_gate(call):
+    from .keyboard import benefit_menu
+    keyboard = benefit_menu()
+    bot.edit_message_text("Выбирите действие", call.message.chat.id, call.message.message_id, reply_markup=keyboard)
     #Benefits.select_benefit_gate(call)
     #Benefits.testt(call)
-    Benefits.benefits_gate(call)
+    #Benefits.benefits_gate(call)
 
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('benefits'))
+def benefits_gate(call):
+    Benefits.benefits_gate(call)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('traveling'))
 def traveling(call):
@@ -110,17 +117,22 @@ def sick_leave_end(call):
     )
     bot.register_next_step_handler(msg, Sick_Leave.close_sick_leave, app)
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('back'))
+@bot.callback_query_handler(func=lambda call: call.data.startswith('back_to_main_menu'))
 def back_to_menu(call):
     from .keyboard import tg_bot_menu
     keyboard = tg_bot_menu()
     bot.edit_message_text("Выбирите действие", call.message.chat.id, call.message.message_id, reply_markup=keyboard)
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('back_to_benefit_menu'))
+def back_to_menu(call):
+    from .keyboard import benefit_menu
+    keyboard = benefit_menu()
+    bot.edit_message_text("Выбирите действие", call.message.chat.id, call.message.message_id, reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('my_balance'))
 def receive_balance(call):
     Balance.receive_my_balance(call.message)
-    bot.delete_message(call.message.chat.id, call.message.message_id)
+    #bot.delete_message(call.message.chat.id, call.message.message_id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('exit'))
 def exit_main_menu(call):

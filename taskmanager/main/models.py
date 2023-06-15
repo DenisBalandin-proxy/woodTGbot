@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from mptt.models import MPTTModel, TreeForeignKey
 from django.db.models.signals import post_save
@@ -6,6 +7,7 @@ from django.dispatch import receiver
 from datetime import datetime
 from random import randint
 from .bot_init import bot
+
 
 # Create your models here.
 
@@ -90,7 +92,6 @@ class User(models.Model):
     staff_type = models.CharField(max_length=5, blank=True, null=True, editable=False)
     access = models.CharField(max_length=1, choices=ACCESS, default='P', null=True, verbose_name='Доступ')
     fired = models.BooleanField(default=False, verbose_name='Уволен')
-
 
     def __str__(self):
         return self.user_fio
@@ -467,7 +468,23 @@ def save_active_application_signal(sender, instance, **kwargs):
         for document in documents:
             DocumentsInApplicationForPayment.objects.create(application_payment_id=app.pk, document_id=document.pk)
 
-        instance.delete()
+        buhi = ApplicationRoleNotification.objects.filter(role='CA').all()
+
+        users = []
+        for buh in buhi:
+            if buh.person_id:
+                user = User.objects.filter(id=buh.person_id).first()
+                users.append(user)\
+
+        if not users:
+            instance.delete()
+            return
+
+        for user in users:
+            text = f"Новая заявка на льготы.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}"
+            bot.send_message(user.chat_id, text)
+
+    instance.delete()
 
 
     if instance.state == "P":
@@ -486,6 +503,16 @@ def save_active_application_signal(sender, instance, **kwargs):
             DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.pk)
 
         instance.delete()
+
+@receiver(post_save, sender=ApplicationForPayment)
+def save_application_for_payment_signal(sender, instance, **kwargs):
+    if instance.date_of_payment and instance.state == 'PR':
+        from .tasks import benefit_status_schedule
+        benefit_status_schedule(instance.date_of_payment, instance.pk)
+
+        instance.state = 'PM'
+        instance.save()
+
 
     #if instance.state == "AP":
       #  instan

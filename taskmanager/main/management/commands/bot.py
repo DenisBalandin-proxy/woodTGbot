@@ -6,7 +6,7 @@ from telebot import types
 import telebot
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from ...models import User, Document, ActiveApplication, DocumentsInApplication, TempUser, Department, BenefitSession
-from datetime import datetime, time, date
+from datetime import datetime, timedelta
 from ...bot_init import bot
 from ...tasks import supper_sum
 #from ....wood_export_bot.celery import app
@@ -19,8 +19,8 @@ from ...sick_leave import Sick_Leave
 #bot = telebot.TeleBot(settings.TOKEN)
 class CheckingAvailability():
 
+    @staticmethod
     def check_user(message):
-        #ДОБАВИТЬ FIRST() ЧТОБЫ СРАЗУ ФИЛЬТРОВАТЬ И БРАТЬ ПЕРВЫЙ ЭЛЕМЕНТ ИЗ БАЗЫ
         user = User.objects.filter(chat_id=message.from_user.id).first()
 
         if not user:
@@ -33,18 +33,21 @@ class CheckingAvailability():
                 bot.send_message(message.from_user.id, "Отказано в доступе")
                 return False
 
+    @staticmethod
     def mailing(chat_id, text):
         bot.send_message(chat_id, text)
 
+    #MAKE THIS TASK FOR CELERY
+    @staticmethod
     def work_experience(chat_id):
-        user_data = User.objects.get(chat_id=chat_id)
+        user_data = User.objects.filter(chat_id=chat_id).first()
 
         date_of_hiring = user_data.dateOfHiring
         date_today = datetime.today().date()
 
         wort_experience_in_days = date_today - date_of_hiring
         experience = wort_experience_in_days.days
-
+        #MAKE STAFF TYPE !!!!+!+!+!+!+!+!+!+!+!+!+!+!+!+!!++!!++!+!+!+!+!+!+!+!+!+!++!+!+!+!+!+!+!+!+!+!+!+!+!+!+!+!
         if experience <= 365:
             user_data.balance = 10000
         elif experience > 365 and experience <= 1095:
@@ -57,9 +60,32 @@ class CheckingAvailability():
         user_data.save()
 
 
+    @staticmethod
+    def work_experience_more_than_90_days(message):
+        user_data = User.objects.filter(chat_id=message.from_user.id).first()
+
+        date_of_hiring = user_data.dateOfHiring
+        date_today = datetime.today().date()
+
+        wort_experience_in_days = date_today - date_of_hiring
+        experience = wort_experience_in_days.days
+
+        if experience > 180:
+            return True
+        else:
+            date_of_start_benefit_program = date_of_hiring + timedelta(days=180)
+            date = str(date_of_start_benefit_program)
+            #bot.send_message(chat_id, f'Доступ к льготам будет открыт: {date}')
+            bot.edit_message_text(f'Доступ к льготам будет открыт: {date}', message.from_user.id, message.message.message_id)
+            return False
+
+
 class Command(BaseCommand):
   	# Используется как описание команды обычно
     help = 'Implemented to Django application telegram bot setup command'
+
+    phone = ""
+    pin = ""
 
     sessions = BenefitSession.objects.all()
 
@@ -82,11 +108,6 @@ class Command(BaseCommand):
         @bot.message_handler(commands=['start', 'auth'])
         def auth_process(message):
 
-            supper_sum(5, 7)
-
-            print("ENDD")
-            #print()
-            bot.send_message(630157933, "FOCKIN YEAH")
             user = User.objects.filter(chat_id=message.from_user.id).first()
 
             if user:
@@ -114,13 +135,19 @@ class Command(BaseCommand):
             if message.content_type == 'text':
                 pin = message.text
 
-                if user.phone == phone and user.pin_code == pin:
-                    user.access = 'A'
-                    user.chat_id = message.from_user.id
-                    user.save()
+                if message.text.isdigit():
+                    integer_pin = int(message.text)
+                    if user.phone == phone and user.pin_code == integer_pin:
+                        user.access = 'A'
+                        user.chat_id = message.from_user.id
+                        user.save()
 
-                    CheckingAvailability.work_experience(message.from_user.id)
-                    bot.send_message(message.from_user.id, 'Поздравляем! Вы успешно авторизовались в чате! Откройте меню чтобы ознакомиться с функционалом!')
+                        CheckingAvailability.work_experience(message.from_user.id)
+                        bot.send_message(message.from_user.id,
+                                         'Поздравляем! Вы успешно авторизовались в чате! Откройте меню чтобы ознакомиться с функционалом!')
+                    else:
+                        bot.send_message(message.from_user.id,
+                                         'Не удалось подтвердить pin-code. Попробуйте повторно через меню авторизации.')
                 else:
                     bot.send_message(message.from_user.id,
                                      'Не удалось подтвердить pin-code. Попробуйте повторно через меню авторизации.')

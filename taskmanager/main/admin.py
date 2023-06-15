@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 from django_mptt_admin.admin import DjangoMpttAdmin
 from .models import (
     User,
@@ -17,7 +19,23 @@ from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
 
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ('user_fio', 'phone', 'sex',)
+        readonly_fields = ('sex',)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        true_answer = cleaned_data.get("phone")
+        if not true_answer.isdigit():
+            # Проверяем, что у других ответов не установлен чекбокс "Верный ответ"
+            raise ValidationError(u'Введите номер в формате 89209209090')
+        return cleaned_data
+
 class PostAdmin(admin.ModelAdmin):
+    form = UserForm
+    model = User
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
     list_display = ("user_fio", "department_user", "job", "show_head_of_department")
     readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
@@ -39,6 +57,14 @@ class PostAdmin(admin.ModelAdmin):
                     "access",
                     "fired"
                 )
+
+
+    def clean(self):
+        cleaned_data = super(PostAdmin, self).clean()
+        if not cleaned_data.get('phone').isdigit():
+            return ValidationError(u'Введите номер в формате 89209209090')
+        else:
+            return cleaned_data
 
     def account_actions(self, obj):
         print("WE SAVED USER")
@@ -71,7 +97,7 @@ class DocumentsInApplicationForPaymentInLine(admin.StackedInline):
 
 class ApplicationForPaymentAdmin(admin.ModelAdmin):
     inlines  = [DocumentsInApplicationForPaymentInLine]
-    readonly_fields = ["fio", "benefit", "sum", "created"]
+    readonly_fields = ["fio", "benefit", "sum", "created", "state"]
     list_display = ["fio", "benefit", "sum", "state", "created"]
 
 admin.site.register(ApplicationForPayment, ApplicationForPaymentAdmin)

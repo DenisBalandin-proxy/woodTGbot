@@ -1,4 +1,5 @@
 import os
+import datetime
 from celery import Celery
 from celery.schedules import crontab
 #from main.tasks import supper_sum
@@ -11,17 +12,3 @@ app.autodiscover_tasks()
 
 #task = app.task
 
-@app.task
-def show(arg):
-    print(arg)
-
-
-app.conf.beat_schedule = {
-    'task-name': {
-        'task': 'wood_export_bot.celery',  # instead 'show'
-        #'task': 'main.tasks.supper_sum',
-        'schedule': 5.0,
-        'args': (42,),
-    },
-}
-app.conf.timezone = 'UTC'
