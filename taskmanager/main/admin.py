@@ -36,15 +36,21 @@ class UserForm(ModelForm):
             if user_from_db.dateOfBirth == cleaned_data.get('dateOfBirth') and not cleaned_data.get('pin_code'):
                 raise ValidationError(u'Такой пользователь уже существует')
             else:
+                if not cleaned_data.get('phone'):
+                    raise ValidationError(u'Номер телефона не может быть пустым')
+                else:
+                    if not cleaned_data.get('phone').isdigit():
+                        raise ValidationError(u'Введите номер в формате 89209209090')
+                    else:
+                        return cleaned_data
+        else:
+            if not cleaned_data.get('phone'):
+                raise ValidationError(u'Номер телефона не может быть пустым')
+            else:
                 if not cleaned_data.get('phone').isdigit():
                     raise ValidationError(u'Введите номер в формате 89209209090')
                 else:
                     return cleaned_data
-        else:
-            if not cleaned_data.get('phone').isdigit():
-                raise ValidationError(u'Введите номер в формате 89209209090')
-            else:
-                return cleaned_data
 
 class PostAdmin(admin.ModelAdmin):
     form = UserForm
