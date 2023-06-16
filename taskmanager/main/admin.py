@@ -22,20 +22,18 @@ from django.utils.safestring import mark_safe
 class UserForm(ModelForm):
     class Meta:
         model = User
-        fields = ('user_fio', 'phone', 'sex',)
-        readonly_fields = ('sex',)
+        fields = ('user_fio', 'phone', 'sex', 'pin_code', 'department_user')
+        readonly_fields = ('sex', 'user_fio')
 
     def clean(self):
         cleaned_data = super().clean()
 
-        #current_user_fio = cleaned_data.get('user_fio')
-        #current_user_date_of_birth = cleaned_data.get('dateOfBirth')
-        #phone = cleaned_data.get("phone")
         user_from_db = User.objects.filter(user_fio=cleaned_data.get('user_fio')).first()
-        #print(user_from_db.dateOfBirth)
+        print(cleaned_data.get('user_fio'))
+        print(cleaned_data.get('pin_code'))
         if user_from_db:
             # print(current_user_date_of_birth)
-            if user_from_db.dateOfBirth == cleaned_data.get('dateOfBirth'):
+            if user_from_db.dateOfBirth == cleaned_data.get('dateOfBirth') and not cleaned_data.get('pin_code'):
                 raise ValidationError(u'Такой пользователь уже существует')
             else:
                 if not cleaned_data.get('phone').isdigit():
@@ -53,7 +51,7 @@ class PostAdmin(admin.ModelAdmin):
     model = User
     #prepopulated_fields = {"slug": ("user_fio", "department",)}
     list_display = ("user_fio", "department_user", "job", "show_head_of_department")
-    readonly_fields = ('balance', 'wood_coins', 'access', 'pin_code')
+    readonly_fields = ('balance', 'wood_coins', 'access')
     list_filter = ["access", "department_user"]
     search_fields = ["user_fio"]
     fields = (
@@ -72,9 +70,6 @@ class PostAdmin(admin.ModelAdmin):
                     "access",
                     "fired"
                 )
-
-
-
 
 
     def account_actions(self, obj):

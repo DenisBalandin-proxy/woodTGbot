@@ -78,7 +78,7 @@ class User(models.Model):
     chat_id = models.IntegerField(blank=True, null=True, editable=False)
     user_fio = models.CharField(max_length=100, verbose_name='ФИО', blank=False)
     phone = models.CharField(max_length=50, verbose_name='Телефон', null=True)
-    pin_code = models.IntegerField(verbose_name='Код доступа к боту', null=True)
+    pin_code = models.IntegerField(verbose_name='Код доступа к боту (автогенерируемое)', null=True, blank=True)
     sex = models.CharField(max_length=1, choices=SEXES, blank=True, verbose_name='Пол')
     dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')
     department_user = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
