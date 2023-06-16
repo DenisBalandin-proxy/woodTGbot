@@ -100,7 +100,7 @@ class Benefits():
                 integer_sum = int(message.text)
                 if user.balance >= integer_sum and integer_sum > 0:
 
-                    if benefit == 'travelign':
+                    if benefit == 'traveling':
                         current_benefit = "Путешествие"
                     elif benefit == 'health':
                         current_benefit = "Здоровье"

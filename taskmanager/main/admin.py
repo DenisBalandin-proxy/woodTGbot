@@ -27,11 +27,26 @@ class UserForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        true_answer = cleaned_data.get("phone")
-        if not true_answer.isdigit():
-            # Проверяем, что у других ответов не установлен чекбокс "Верный ответ"
-            raise ValidationError(u'Введите номер в формате 89209209090')
-        return cleaned_data
+
+        #current_user_fio = cleaned_data.get('user_fio')
+        #current_user_date_of_birth = cleaned_data.get('dateOfBirth')
+        #phone = cleaned_data.get("phone")
+        user_from_db = User.objects.filter(user_fio=cleaned_data.get('user_fio')).first()
+        #print(user_from_db.dateOfBirth)
+        if user_from_db:
+            # print(current_user_date_of_birth)
+            if user_from_db.dateOfBirth == cleaned_data.get('dateOfBirth'):
+                raise ValidationError(u'Такой пользователь уже существует')
+            else:
+                if not cleaned_data.get('phone').isdigit():
+                    raise ValidationError(u'Введите номер в формате 89209209090')
+                else:
+                    return cleaned_data
+        else:
+            if not cleaned_data.get('phone').isdigit():
+                raise ValidationError(u'Введите номер в формате 89209209090')
+            else:
+                return cleaned_data
 
 class PostAdmin(admin.ModelAdmin):
     form = UserForm
@@ -59,18 +74,15 @@ class PostAdmin(admin.ModelAdmin):
                 )
 
 
-    def clean(self):
-        cleaned_data = super(PostAdmin, self).clean()
-        if not cleaned_data.get('phone').isdigit():
-            return ValidationError(u'Введите номер в формате 89209209090')
-        else:
-            return cleaned_data
+
+
 
     def account_actions(self, obj):
         print("WE SAVED USER")
 
     def show_head_of_department(self, obj):
         return mark_safe(obj.department_user.head)
+    show_head_of_department.short_description = 'Руководитель'
 
 admin.site.register(User, PostAdmin)
 

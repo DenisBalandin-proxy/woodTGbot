@@ -31,8 +31,9 @@ def show():
 
 @app.task
 def benefit_status_schedule(date, app_id):
-    payment_day = datetime.utcnow() + timedelta(minutes=1)
-    change_benefit_status.apply_async((app_id,), eta=payment_day)
+    #payment_day = datetime.utcnow() + timedelta(minutes=1)
+    payment_day = date + timedelta(days=1) + timedelta(hours=4)
+    change_benefit_status.apply_async((app_id, date), eta=payment_day)
 
 #show.apply_async(eta=datetime.datetime(2023, 6, 9, 16, 17)) #y/m/d
 
@@ -49,27 +50,35 @@ def benefit_status_schedule(date, app_id):
 
 
 @app.task
-def change_benefit_status(app_id):
-    app = ApplicationForPayment.objects.filter(id=app_id).first()
+def change_benefit_status(app_id, date):
+    if datetime.today().date() > date:
+        app = ApplicationForPayment.objects.filter(id=app_id).first()
 
-    if app.state == "PM":
-        app_archive = ApplicationArchive.objects.create(
-            chat_id=app.chat_id,
-            created=app.created,
-            fio=app.fio,
-            benefit=app.benefit,
-            state='P',
-            sum=app.sum
-        )
+        if not app:
+            return
 
-        documents = DocumentsInApplicationForPayment.objects.filter(application_payment_id=app_id).all()
+        if app.state == "PM":
+            app_archive = ApplicationArchive.objects.create(
+                chat_id=app.chat_id,
+                created=app.created,
+                fio=app.fio,
+                benefit=app.benefit,
+                state='P',
+                sum=app.sum
+            )
 
-        for document in documents:
-            DocumentsInApplicationArchive.objects.create(application_archive_id=app_archive.pk, document_id=document.pk)
+            documents = DocumentsInApplicationForPayment.objects.filter(application_payment_id=app_id).all()
+            print(documents)
+            for document in documents:
+                DocumentsInApplicationArchive.objects.create(application_archive_id=app_archive.pk,
+                                                             document_id=document.document_id)
+
+            app.delete()
+    else:
+        print("NOT TODAY")
 
 
 
-        app.delete()
 
 
 app.conf.timezone = 'UTC'

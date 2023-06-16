@@ -48,6 +48,9 @@ class CheckingAvailability():
         wort_experience_in_days = date_today - date_of_hiring
         experience = wort_experience_in_days.days
         #MAKE STAFF TYPE !!!!+!+!+!+!+!+!+!+!+!+!+!+!+!+!!++!!++!+!+!+!+!+!+!+!+!+!++!+!+!+!+!+!+!+!+!+!+!+!+!+!+!+!
+        if experience < 181:
+            user_data.balance = 10000
+
         if experience <= 365:
             user_data.balance = 10000
         elif experience > 365 and experience <= 1095:

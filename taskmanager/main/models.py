@@ -440,7 +440,7 @@ def save_active_application_signal(sender, instance, **kwargs):
         documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
 
         for document in documents:
-            DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.pk)
+            DocumentsInApplicationArchive.objects.create(application_archive_id=app.pk, document_id=document.document_id)
 
 
         user.balance = instance.sum + user.balance
@@ -466,7 +466,7 @@ def save_active_application_signal(sender, instance, **kwargs):
         documents = DocumentsInApplication.objects.filter(application_id=instance.pk).all()
 
         for document in documents:
-            DocumentsInApplicationForPayment.objects.create(application_payment_id=app.pk, document_id=document.pk)
+            DocumentsInApplicationForPayment.objects.create(application_payment_id=app.pk, document_id=document.document_id)
 
         buhi = ApplicationRoleNotification.objects.filter(role='CA').all()
 
@@ -481,10 +481,10 @@ def save_active_application_signal(sender, instance, **kwargs):
             return
 
         for user in users:
-            text = f"Новая заявка на льготы.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}"
+            text = f"Новая заявка к выплате.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}"
             bot.send_message(user.chat_id, text)
 
-    instance.delete()
+        instance.delete()
 
 
     if instance.state == "P":
@@ -494,6 +494,7 @@ def save_active_application_signal(sender, instance, **kwargs):
             fio=instance.fio,
             benefit=instance.benefit,
             state=instance.state,
+            description=instance.description,
             sum=instance.sum
         )
 
@@ -507,12 +508,22 @@ def save_active_application_signal(sender, instance, **kwargs):
 @receiver(post_save, sender=ApplicationForPayment)
 def save_application_for_payment_signal(sender, instance, **kwargs):
     if instance.date_of_payment and instance.state == 'PR':
-        from .tasks import benefit_status_schedule
-        benefit_status_schedule(instance.date_of_payment, instance.pk)
+
+        user = User.objects.filter(chat_id=instance.chat_id).first()
+
+        #text = f"Заявка к выплате.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}\nДата выплаты:{instance.date_of_payment}"
+        #bot.send_message(user.chat_id, text)
 
         instance.state = 'PM'
         instance.save()
+    elif instance.date_of_payment and instance.state == 'PM':
+        from .tasks import benefit_status_schedule
+        benefit_status_schedule(instance.date_of_payment, instance.pk)
 
+        user = User.objects.filter(chat_id=instance.chat_id).first()
+
+        text = f"Заявка к выплате.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}\nДата выплаты:{instance.date_of_payment}"
+        bot.send_message(user.chat_id, text)
 
     #if instance.state == "AP":
       #  instan
