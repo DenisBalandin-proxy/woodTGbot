@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="User validation 2">
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="User validation 3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/taskmanager/main/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/admin.py" afterDir="false" />
     </list>
@@ -272,7 +272,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686936092082</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="User validation 3">
+      <created>1686944555651</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1686944555651</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -402,6 +409,7 @@
     <MESSAGE value="User phone number validation" />
     <MESSAGE value="User validation" />
     <MESSAGE value="User validation 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="User validation 2" />
+    <MESSAGE value="User validation 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="User validation 3" />
   </component>
 </project>

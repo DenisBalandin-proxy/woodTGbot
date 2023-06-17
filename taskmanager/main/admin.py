@@ -31,6 +31,8 @@ class UserForm(ModelForm):
         user_from_db = User.objects.filter(user_fio=cleaned_data.get('user_fio')).first()
         print(cleaned_data.get('user_fio'))
         print(cleaned_data.get('pin_code'))
+
+
         if user_from_db:
             # print(current_user_date_of_birth)
             if user_from_db.dateOfBirth == cleaned_data.get('dateOfBirth') and not cleaned_data.get('pin_code'):
@@ -50,7 +52,10 @@ class UserForm(ModelForm):
                 if not cleaned_data.get('phone').isdigit():
                     raise ValidationError(u'Введите номер в формате 89209209090')
                 else:
-                    return cleaned_data
+                    if cleaned_data.get('pin_code'):
+                        raise ValidationError(u'Поле "Код доступа к боту" не должно быть заполнено вручную')
+                    else:
+                        return cleaned_data
 
 class PostAdmin(admin.ModelAdmin):
     form = UserForm
