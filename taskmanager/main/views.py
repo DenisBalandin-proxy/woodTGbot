@@ -17,6 +17,9 @@ import pdb # pdb.set_trace()
 def home_page(request):
     return render(request, 'home.html')
 
+def about_benefits(request):
+    return render(request, 'benefitsInfo.html')
+
 def success(request):
     return render(request, 'success.html')
 def user_detail(request, id, benefit):

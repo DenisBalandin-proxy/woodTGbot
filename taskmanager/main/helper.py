@@ -85,10 +85,6 @@ class Benefits():
 
 
     @staticmethod
-    def f(message):
-        print(message.id)
-
-    @staticmethod
     def create_benefits_url(message, benefit):
         current_benefit = None
 
@@ -134,6 +130,15 @@ class Benefits():
                 bot.register_next_step_handler(message, Benefits.create_benefits_url, benefit)
 
 
+    @staticmethod
+    def show_about_benefits_page(message):
+        url = "<a href='http://127.0.0.1:8000/benefitsinfo'><b>👉CRAFT BENEFITS. О ПРОГРАММЕ👈</b></a>"
+        #bot.send_message(message, url)
+        bot.edit_message_text("Выбирите льготу", message.from_user.id, message.message.message_id, parse_mode="HTML")
+
+
+
+#///////DELETE THIS
     @staticmethod
     def select_ben(message):
         if message.content_type == 'text':

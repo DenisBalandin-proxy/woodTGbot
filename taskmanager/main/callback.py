@@ -46,6 +46,11 @@ def benefits_gate(call):
 def benefits_gate(call):
     Benefits.benefits_gate(call)
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('about_program'))
+def benefits_program(call):
+    Benefits.show_about_benefits_page(call)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('traveling'))
 def traveling(call):
     bot.send_message(call.message.chat.id, "Введите сумму выплаты")

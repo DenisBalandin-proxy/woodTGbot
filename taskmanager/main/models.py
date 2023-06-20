@@ -509,7 +509,7 @@ def save_active_application_signal(sender, instance, **kwargs):
 def save_application_for_payment_signal(sender, instance, **kwargs):
     if instance.date_of_payment and instance.state == 'PR':
 
-        user = User.objects.filter(chat_id=instance.chat_id).first()
+        #user = User.objects.filter(chat_id=instance.chat_id).first()
 
         #text = f"Заявка к выплате.\nФИО: {instance.fio}\nЛьгота: {instance.benefit}\nСумма: {instance.sum}\nДата выплаты:{instance.date_of_payment}"
         #bot.send_message(user.chat_id, text)
