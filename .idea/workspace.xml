@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="User validation 4">
-      <change afterPath="$PROJECT_DIR$/taskmanager/main/templates/benefitsInfo.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/main/callback.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/callback.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/main/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/helper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/main/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/main/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/requirements.txt" afterDir="false" />
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="PSQL-bin">
+      <change beforePath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +55,9 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/venv/Lib/site-packages/django/core/handlers/base.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2QFeFdGrHpxxJdFYEyiS59UFjWU" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -292,7 +288,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686987460007</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="PSQL-bin">
+      <created>1687269825270</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1687269825270</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -399,7 +402,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="SupervisorAndWorkerTwo" />
     <MESSAGE value="Lulu" />
     <MESSAGE value="DATABASE CHANGE" />
     <MESSAGE value="Changed CASCADE" />
@@ -424,6 +426,7 @@
     <MESSAGE value="User validation 2" />
     <MESSAGE value="User validation 3" />
     <MESSAGE value="User validation 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="User validation 4" />
+    <MESSAGE value="PSQL-bin" />
+    <option name="LAST_COMMIT_MESSAGE" value="PSQL-bin" />
   </component>
 </project>
