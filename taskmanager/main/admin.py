@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django_mptt_admin.admin import DjangoMpttAdmin
-from mptt.admin import TreeRelatedFieldListFilter
+#from mptt.admin import TreeRelatedFieldListFilter
 from .models import (
     User,
     Department,
@@ -18,9 +18,9 @@ from .models import (
     SickLeave)
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from django_admin_listfilter_dropdown.filters import (
-    DropdownFilter, ChoiceDropdownFilter, RelatedDropdownFilter
-)
+#from django_admin_listfilter_dropdown.filters import (
+#    DropdownFilter, ChoiceDropdownFilter, RelatedDropdownFilter
+#)
 
 
 class UserForm(ModelForm):

@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'django_mptt_admin',
-    'django_admin_listfilter_dropdown',
+    #'django_admin_listfilter_dropdown',
 ]
 
 MIDDLEWARE = [

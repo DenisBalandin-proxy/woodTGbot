@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from datetime import datetime
 from random import randint
 from .bot_init import bot
-from django.utils.html import format_html
+#from django.utils.html import format_html
 
 
 # Create your models here.
