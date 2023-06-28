@@ -45,6 +45,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 # Application definition
 
 INSTALLED_APPS = [
+    #'bootstrap_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
-    'django_mptt_admin'
+    'django_mptt_admin',
+    'django_admin_listfilter_dropdown',
 ]
 
 MIDDLEWARE = [

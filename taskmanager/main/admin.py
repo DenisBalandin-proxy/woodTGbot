@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django_mptt_admin.admin import DjangoMpttAdmin
+from mptt.admin import TreeRelatedFieldListFilter
 from .models import (
     User,
     Department,
@@ -17,6 +18,9 @@ from .models import (
     SickLeave)
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from django_admin_listfilter_dropdown.filters import (
+    DropdownFilter, ChoiceDropdownFilter, RelatedDropdownFilter
+)
 
 
 class UserForm(ModelForm):
@@ -64,6 +68,15 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ("user_fio", "department_user", "job", "show_head_of_department")
     readonly_fields = ('balance', 'wood_coins', 'access')
     list_filter = ["access", "department_user"]
+
+    #list_filter = (
+    #    # for ordinary fields
+    #    ('department_user', RelatedDropdownFilter),
+    #)
+
+
+
+
     search_fields = ["user_fio"]
     fields = (
                     "user_fio",
@@ -98,7 +111,12 @@ class SupervisorAdmin(admin.ModelAdmin):
 
 admin.site.register(Supervisor, SupervisorAdmin)
 class CategoryAdmin(DjangoMpttAdmin):
+    list_display = ("title", "head", "show_number_of_employees")
     prepopulated_fields = {"slug": ("title",)}
+
+    def show_number_of_employees(self, obj):
+        count = User.objects.filter(department_user=obj.pk)
+        return len(count)
 
 admin.site.register(Department, CategoryAdmin)
 

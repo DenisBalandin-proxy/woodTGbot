@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from datetime import datetime
 from random import randint
 from .bot_init import bot
+from django.utils.html import format_html
 
 
 # Create your models here.
@@ -83,7 +84,7 @@ class User(models.Model):
     dateOfBirth = models.DateField(blank=True, null=True, editable=True, verbose_name='Дата рождения')
     department_user = TreeForeignKey('Department', null=True, on_delete=models.PROTECT, related_name='users', verbose_name='Отдел')
     is_supervisor = models.BooleanField(default=False, verbose_name='Руководитель')
-    supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.SET_NULL)
+    #supervisors = models.ForeignKey('Supervisor', blank=True, null=True, verbose_name='Руководитель', on_delete=models.SET_NULL)
     job = models.CharField(max_length=100, verbose_name='Должность', blank=True)
     dateOfHiring = models.DateField(null=True, editable=True, verbose_name='Дата приёма на работу')
     balance = models.IntegerField(blank=True, null=True, editable=False, verbose_name='Баланс')
@@ -171,7 +172,8 @@ class Department(MPTTModel):
         return reverse('user-by-department', args=[str(self.slug)])
 
     def __str__(self):
-        return self.title
+        count = User.objects.filter(department_user=self.pk)
+        return self.title + " " + "(" + str(len(count)) + ")"
 
 
 #TEST+++++++++++++++++++++++++++++
