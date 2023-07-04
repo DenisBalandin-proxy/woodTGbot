@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Number of users in department 2">
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Domain2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/taskmanager/wood_export_bot/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/wsgi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -318,7 +316,21 @@
       <option name="project" value="LOCAL" />
       <updated>1687976021864</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="Domain">
+      <created>1688460321655</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1688460321655</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Domain2">
+      <created>1688460715299</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1688460715299</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -425,8 +437,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Changed CASCADE." />
-    <MESSAGE value="Add supervisor and worker" />
     <MESSAGE value="Add supervisor and worker." />
     <MESSAGE value="Sequence User" />
     <MESSAGE value="Sequence User." />
@@ -450,6 +460,8 @@
     <MESSAGE value="PSQL-new connection" />
     <MESSAGE value="Number of users in department" />
     <MESSAGE value="Number of users in department 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Number of users in department 2" />
+    <MESSAGE value="Domain" />
+    <MESSAGE value="Domain2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Domain2" />
   </component>
 </project>
