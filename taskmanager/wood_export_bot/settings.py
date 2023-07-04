@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-y1(spmq9f1og()+8omvn78%8dm7+5^)ytl8t&6d8i-=c-uxz#9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.16.4.28', '127.0.0.1', '84.53.241.248', 'woodcraft-tg-bot.ru']
+ALLOWED_HOSTS = ['172.16.4.28', '127.0.0.1', '84.53.241.248', 'woodcraft-tg-bot.ru', 'www.woodcraft-tg-bot.ru']
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 #SESSION_COOKIE_AGE = 30 * 60
