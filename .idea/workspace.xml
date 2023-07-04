@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Number of users in department">
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Number of users in department 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/wood_export_bot/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/wood_export_bot/wsgi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -309,7 +311,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687975443135</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Number of users in department 2">
+      <created>1687976021864</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1687976021864</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -416,7 +425,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Changed CASCADE" />
     <MESSAGE value="Changed CASCADE." />
     <MESSAGE value="Add supervisor and worker" />
     <MESSAGE value="Add supervisor and worker." />
@@ -441,6 +449,7 @@
     <MESSAGE value="PSQL-bin" />
     <MESSAGE value="PSQL-new connection" />
     <MESSAGE value="Number of users in department" />
-    <option name="LAST_COMMIT_MESSAGE" value="Number of users in department" />
+    <MESSAGE value="Number of users in department 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Number of users in department 2" />
   </component>
 </project>
