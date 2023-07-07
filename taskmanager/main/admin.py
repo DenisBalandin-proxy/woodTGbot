@@ -68,6 +68,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ("user_fio", "department_user", "job", "show_head_of_department")
     readonly_fields = ('balance', 'wood_coins', 'access')
     list_filter = ["access", "department_user"]
+    list_editable = ["department_user"]
 
     #list_filter = (
     #    # for ordinary fields
@@ -132,7 +133,7 @@ class DocumentsInApplicationForPaymentInLine(admin.StackedInline):
 
 
 class ApplicationForPaymentAdmin(admin.ModelAdmin):
-    inlines  = [DocumentsInApplicationForPaymentInLine]
+    inlines = [DocumentsInApplicationForPaymentInLine]
     readonly_fields = ["fio", "benefit", "sum", "created", "state"]
     list_display = ["fio", "benefit", "sum", "state", "created"]
 

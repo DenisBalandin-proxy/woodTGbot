@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Domain2">
+    <list default="true" id="6575e74b-b289-4d25-9c37-5ebe62186d3e" name="Changes" comment="Domain3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskmanager/main/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskmanager/main/admin.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +72,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Operator11/Desktop/BOT/woodTGbot&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Operator11/Desktop/PREVIOUS/PC WORK/Python/divan_tg_bot-main&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -330,7 +331,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688460715299</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="Domain3">
+      <created>1688465563968</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1688465563968</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -437,7 +445,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add supervisor and worker." />
     <MESSAGE value="Sequence User" />
     <MESSAGE value="Sequence User." />
     <MESSAGE value="Sequence User New" />
@@ -462,6 +469,7 @@
     <MESSAGE value="Number of users in department 2" />
     <MESSAGE value="Domain" />
     <MESSAGE value="Domain2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Domain2" />
+    <MESSAGE value="Domain3" />
+    <option name="LAST_COMMIT_MESSAGE" value="Domain3" />
   </component>
 </project>
